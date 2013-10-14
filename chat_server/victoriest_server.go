@@ -10,7 +10,26 @@ import (
 	"path/filepath"
 )
 
+var quitSp chan bool
+
 func main() {
+	argLen := len(os.Args)
+	var cmd string
+	if argLen != 1 {
+		cmd = "startup"
+	} else {
+		cmd = os.Args[1]
+	}
+
+	if cmd == "startup" {
+		startUp()
+	} else if cmd == "shutdown" {
+		shutDown()
+	}
+
+}
+
+func startUp() {
 	strAddr := ":" + readServerConfig()
 	tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
 	checkError(err)
@@ -18,9 +37,13 @@ func main() {
 	checkError(err)
 	defer tcpListener.Close()
 	fmt.Println("start listen ", tcpListener.Addr().String())
+	// 新连接channel
 	connChan := make(chan *net.TCPConn)
+	// tcpConn的map
 	connMap := make(map[int]*net.TCPConn)
-	go ConnectionManager(connMap, connChan)
+	// 退出信号channel
+	quitSp = make(chan bool)
+	go ConnectionManager(connMap, connChan, quitSp)
 	for {
 		var tcpConn *net.TCPConn
 		tcpConn, err = tcpListener.AcceptTCP()
@@ -33,7 +56,6 @@ func main() {
 		fmt.Println("a client connected : ", tcpConn.RemoteAddr().String())
 		go tcpHandler(*tcpConn)
 	}
-
 }
 
 func checkError(err error) {
@@ -65,12 +87,23 @@ func tcpHandler(tcpConn net.TCPConn) {
 	}
 }
 
-func ConnectionManager(connMap map[int]*net.TCPConn, connChan chan *net.TCPConn) {
+/**
+* 客户端连接管理器
+ */
+func ConnectionManager(connMap map[int]*net.TCPConn, connChan chan *net.TCPConn, quitSp chan bool) {
+	// TODO : 弄个uuid呗
 	i := 0
 	for {
-		newConn := <-connChan
-		connMap[i] = newConn
-		i++
+		select {
+		case newConn := <-connChan:
+			connMap[i] = newConn
+			i++
+		case <-quitSp:
+			for _, conn := range connMap {
+				conn.Close()
+			}
+			break
+		}
 	}
 }
 
@@ -81,8 +114,6 @@ func readServerConfig() string {
 	exefile, _ := exec.LookPath(os.Args[0])
 	// exepath, _ := filepath.Abs(exefile)
 	// dir, _ := path.Split(exepath)
-	// wd, _ := os.Getwd()
-	// _, wd, _, _ := runtime.Caller(0)
 
 	fmt.Println(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server_config.ini")
@@ -91,4 +122,11 @@ func readServerConfig() string {
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
 	checkError(err)
 	return port
+}
+
+/**
+* 关闭服务器指令
+ */
+func shutDown() {
+	quitSp <- true
 }
