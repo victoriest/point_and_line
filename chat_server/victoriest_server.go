@@ -19,15 +19,9 @@ var connMap map[int]*net.TCPConn
 
 func main() {
 	// 启动服务goroutine
-	startUp()
+	go startUp()
 
-	// 监测退出程序的信号量
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
-
-	s := <-c
-	// shutDown()
-	fmt.Println("Got signal:", s)
+	shutDown()
 
 }
 
@@ -58,11 +52,16 @@ func startUp() {
 * 关闭服务器指令
  */
 func shutDown() {
-	quitSp <- true
+	// 监测退出程序的信号量
+	sign := make(chan os.Signal, 1)
+	signal.Notify(sign, os.Interrupt, os.Kill)
+	<-sign
+	fmt.Println(len(connMap))
 	for _, conn := range connMap {
-		fmt.Println("close")
+		fmt.Println("close:", conn.RemoteAddr().String())
 		conn.Close()
 	}
+	fmt.Println("shutdown")
 }
 
 func checkError(err error) {
