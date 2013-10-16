@@ -6,55 +6,62 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 )
 
+// 退出信号量
 var quitSp chan bool
 
-func main() {
-	argLen := len(os.Args)
-	var cmd string
-	if argLen != 1 {
-		cmd = "startup"
-	} else {
-		cmd = os.Args[1]
-	}
+// 客户端连接Map
+var connMap map[int]*net.TCPConn
 
-	if cmd == "startup" {
-		startUp()
-	} else if cmd == "shutdown" {
-		shutDown()
-	}
+func main() {
+	// 启动服务goroutine
+	startUp()
+
+	// 监测退出程序的信号量
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill)
+
+	s := <-c
+	// shutDown()
+	fmt.Println("Got signal:", s)
 
 }
 
 func startUp() {
+	// 从配置文件中读取port
 	strAddr := ":" + readServerConfig()
+
+	// 构造tcpAddress
 	tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
 	checkError(err)
+
+	// 创建TCP监听
 	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 	defer tcpListener.Close()
 	fmt.Println("start listen ", tcpListener.Addr().String())
-	// 新连接channel
-	connChan := make(chan *net.TCPConn)
+
 	// tcpConn的map
-	connMap := make(map[int]*net.TCPConn)
+	connMap = make(map[int]*net.TCPConn)
 	// 退出信号channel
 	quitSp = make(chan bool)
-	go ConnectionManager(connMap, connChan, quitSp)
-	for {
-		var tcpConn *net.TCPConn
-		tcpConn, err = tcpListener.AcceptTCP()
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		connChan <- tcpConn
 
-		fmt.Println("a client connected : ", tcpConn.RemoteAddr().String())
-		go tcpHandler(*tcpConn)
+	// // 连接管理
+	ConnectionManager(connMap, quitSp, tcpListener)
+}
+
+/**
+* 关闭服务器指令
+ */
+func shutDown() {
+	quitSp <- true
+	for _, conn := range connMap {
+		fmt.Println("close")
+		conn.Close()
 	}
 }
 
@@ -65,6 +72,9 @@ func checkError(err error) {
 	}
 }
 
+/**
+ * 一客户端一线程
+ */
 func tcpHandler(tcpConn net.TCPConn) {
 	defer tcpConn.Close()
 	for {
@@ -90,20 +100,23 @@ func tcpHandler(tcpConn net.TCPConn) {
 /**
 * 客户端连接管理器
  */
-func ConnectionManager(connMap map[int]*net.TCPConn, connChan chan *net.TCPConn, quitSp chan bool) {
-	// TODO : 弄个uuid呗
+func ConnectionManager(connMap map[int]*net.TCPConn, quitSp chan bool, tcpListener *net.TCPListener) {
+
 	i := 0
 	for {
-		select {
-		case newConn := <-connChan:
-			connMap[i] = newConn
-			i++
-		case <-quitSp:
-			for _, conn := range connMap {
-				conn.Close()
-			}
-			break
+		// var tcpConn *net.TCPConn
+		tcpConn, err := tcpListener.AcceptTCP()
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
 		}
+		// connChan <- tcpConn
+
+		connMap[i] = tcpConn
+		i++
+
+		fmt.Println("a client connected : ", tcpConn.RemoteAddr().String())
+		go tcpHandler(*tcpConn)
 	}
 }
 
@@ -112,9 +125,6 @@ func ConnectionManager(connMap map[int]*net.TCPConn, connChan chan *net.TCPConn,
  */
 func readServerConfig() string {
 	exefile, _ := exec.LookPath(os.Args[0])
-	// exepath, _ := filepath.Abs(exefile)
-	// dir, _ := path.Split(exepath)
-
 	fmt.Println(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server_config.ini")
 	cf, err := goconfig.LoadConfigFile(filepath)
@@ -122,11 +132,4 @@ func readServerConfig() string {
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
 	checkError(err)
 	return port
-}
-
-/**
-* 关闭服务器指令
- */
-func shutDown() {
-	quitSp <- true
 }
