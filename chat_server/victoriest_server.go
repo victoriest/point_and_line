@@ -2,6 +2,9 @@ package main
 
 import (
 	"./goconfig"
+	"bufio"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
@@ -77,18 +80,39 @@ func checkError(err error) {
 func tcpHandler(tcpConn net.TCPConn) {
 	defer tcpConn.Close()
 	for {
-		buf := make([]byte, 256)
-		n, err := tcpConn.Read(buf)
+		reader := bufio.NewReaderSize(&tcpConn, 128)
+		buff, _ := reader.Peek(4)
+		data := bytes.NewBuffer(buff)
+		var length int32
+		err := binary.Read(data, binary.LittleEndian, &length)
+		checkError(err)
+		fmt.Println(length)
+		if int32(reader.Buffered()) < length+4 {
+			fmt.Println("int32(reader.Buffered()) < length+4")
+			_, err := reader.Peek(int(4 + length))
+			if err != nil {
+				return
+			}
+		}
+		pack := make([]byte, int(4+length))
+		_, err = reader.Read(pack)
 		if err != nil {
 			break
 		}
-		// checkError(err)
-		if n > 0 {
-			fmt.Println(tcpConn.RemoteAddr().String(), " read ", n, "byte :", string(buf))
-		} else {
-			fmt.Println(tcpConn.RemoteAddr().String(), "nothing readed...")
-		}
-		n, err = tcpConn.Write(buf)
+		fmt.Println(string(pack[4:]))
+
+		// buf := make([]byte, 256)
+		// n, err := tcpConn.Read(buf)
+		// if err != nil {
+		// 	break
+		// }
+		// // checkError(err)
+		// if n > 0 {
+		// 	fmt.Println(tcpConn.RemoteAddr().String(), " read ", n, "byte :", string(buf))
+		// } else {
+		// 	fmt.Println(tcpConn.RemoteAddr().String(), "nothing readed...")
+		// }
+		_, err = tcpConn.Write(pack)
 		// checkError(err)
 		if err != nil {
 			break

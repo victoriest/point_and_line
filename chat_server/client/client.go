@@ -2,6 +2,9 @@ package main
 
 import (
 	"../goconfig"
+	"bufio"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
@@ -20,12 +23,23 @@ func main() {
 	checkError(err)
 	fmt.Println("connecting ", conn.RemoteAddr().String(), "...")
 	for {
+		writer := bufio.NewWriterSize(conn, 128)
 		timeNow := time.Now().String()
-		_, err := conn.Write([]byte(timeNow))
+
+		lenBuf := new(bytes.Buffer)
+		var length int32 = int32(len(timeNow))
+		println(length)
+		err := binary.Write(lenBuf, binary.LittleEndian, length)
+		println(lenBuf)
+		checkError(err)
+		writer.Write(lenBuf.Bytes())
+		writer.Write([]byte(timeNow))
+		writer.Flush()
+		// _, err := conn.Write([]byte(timeNow))
 		checkError(err)
 		buf := make([]byte, 256)
 		conn.Read(buf)
-		fmt.Println("recv : ", string(buf))
+		fmt.Println("recv : ", string(buf[4:]))
 		time.Sleep(time.Second * 2)
 	}
 	conn.Close()
