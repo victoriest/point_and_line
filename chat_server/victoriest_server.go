@@ -23,7 +23,6 @@ var connMap map[int]*net.TCPConn
 func main() {
 	// 启动服务goroutine
 	go startUp()
-
 	shutDown()
 
 }
@@ -100,6 +99,7 @@ func tcpHandler(tcpConn net.TCPConn) {
 			break
 		}
 		fmt.Println(string(pack[4:]))
+		// use pack do what you want ...
 
 		// buf := make([]byte, 256)
 		// n, err := tcpConn.Read(buf)
@@ -149,7 +149,7 @@ func ConnectionManager(connMap map[int]*net.TCPConn, quitSp chan bool, tcpListen
 func readServerConfig() string {
 	exefile, _ := exec.LookPath(os.Args[0])
 	fmt.Println(filepath.Dir(exefile))
-	filepath := path.Join(filepath.Dir(exefile), "./server_config.ini")
+	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
 	checkError(err)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")

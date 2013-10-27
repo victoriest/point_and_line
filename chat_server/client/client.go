@@ -57,7 +57,7 @@ func readServerConfig() (string, string) {
 	exefile, _ := exec.LookPath(os.Args[0])
 	fmt.Println(filepath.Dir(exefile))
 
-	filepath := path.Join(filepath.Dir(exefile), "./client_config.ini")
+	filepath := path.Join(filepath.Dir(exefile), "./client.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
 	checkError(err)
 
