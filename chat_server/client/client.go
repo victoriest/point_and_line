@@ -17,6 +17,7 @@ import (
 func main() {
 	host, port := readServerConfig()
 	addr := host + ":" + port
+	fmt.Println(addr)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	checkError(err)
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
@@ -26,20 +27,31 @@ func main() {
 		writer := bufio.NewWriterSize(conn, 128)
 		timeNow := time.Now().String()
 
-		lenBuf := new(bytes.Buffer)
-		var length int32 = int32(len(timeNow))
-		println(length)
-		err := binary.Write(lenBuf, binary.LittleEndian, length)
-		println(lenBuf)
-		checkError(err)
-		writer.Write(lenBuf.Bytes())
-		writer.Write([]byte(timeNow))
+		strBuf := GenStringBuff(timeNow)
+		writer.Write(strBuf.Bytes())
 		writer.Flush()
-		// _, err := conn.Write([]byte(timeNow))
+
+		reader := bufio.NewReaderSize(conn, 128)
+		buff, _ := reader.Peek(4)
+		data := bytes.NewBuffer(buff)
+		var length int32
+		err := binary.Read(data, binary.LittleEndian, &length)
 		checkError(err)
-		buf := make([]byte, 256)
-		conn.Read(buf)
-		fmt.Println("recv : ", string(buf[4:]))
+		fmt.Println(length)
+		if int32(reader.Buffered()) < length+4 {
+			fmt.Println("int32(reader.Buffered()) < length+4")
+			_, err := reader.Peek(int(4 + length))
+			if err != nil {
+				return
+			}
+		}
+		pack := make([]byte, int(4+length))
+		_, err = reader.Read(pack)
+		if err != nil {
+			break
+		}
+		fmt.Println(string(pack[4:]))
+
 		time.Sleep(time.Second * 2)
 	}
 	conn.Close()
@@ -68,4 +80,16 @@ func readServerConfig() (string, string) {
 	checkError(err)
 
 	return host, port
+}
+
+func GenStringBuff(str string) *bytes.Buffer {
+	lenBuf := new(bytes.Buffer)
+	var length int32 = int32(len(str))
+	err := binary.Write(lenBuf, binary.LittleEndian, length)
+	if err != nil {
+		fmt.Println(err.Error())
+		return lenBuf
+	}
+	lenBuf.WriteString(str)
+	return lenBuf
 }
