@@ -11,8 +11,11 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"time"
+	// "time"
 )
+
+// 退出信号量
+var quitSp chan bool
 
 func main() {
 	host, port := readServerConfig()
@@ -22,15 +25,39 @@ func main() {
 	checkError(err)
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	checkError(err)
+	defer conn.Close()
 	fmt.Println("connecting ", conn.RemoteAddr().String(), "...")
-	for {
-		writer := bufio.NewWriterSize(conn, 128)
-		timeNow := time.Now().String()
 
-		strBuf := GenStringBuff(timeNow)
+	// 退出信号channel
+	quitSp = make(chan bool)
+
+	go readerPipe(conn)
+	writerPipe(conn)
+
+	// <-quitSp
+}
+
+func writerPipe(conn *net.TCPConn) {
+	for {
+		var msg string
+		fmt.Scanln(&msg)
+		fmt.Println(msg)
+
+		writer := bufio.NewWriterSize(conn, 16)
+		// message := time.Now().String()
+		strBuf := GenStringBuff(msg)
 		writer.Write(strBuf.Bytes())
 		writer.Flush()
+		if msg == "quit" {
+			quitSp <- true
+			break
+		}
+		// time.Sleep(time.Second * 2)
+	}
+}
 
+func readerPipe(conn *net.TCPConn) {
+	for {
 		reader := bufio.NewReaderSize(conn, 128)
 		buff, _ := reader.Peek(4)
 		data := bytes.NewBuffer(buff)
@@ -47,15 +74,12 @@ func main() {
 		}
 		pack := make([]byte, int(4+length))
 		_, err = reader.Read(pack)
-		if err != nil {
-			break
-		}
-		fmt.Println(string(pack[4:]))
-
-		time.Sleep(time.Second * 2)
+		// if err != nil {
+		// 	break
+		// }
+		message := string(pack[4:])
+		fmt.Println(message)
 	}
-	conn.Close()
-	os.Exit(0)
 }
 
 func checkError(err error) {

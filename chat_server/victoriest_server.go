@@ -102,13 +102,12 @@ func tcpHandler(tcpConn net.TCPConn) {
 		if err != nil {
 			break
 		}
-		fmt.Println(string(pack[4:]))
-		// use pack do what you want ...
+		message := string(pack[4:])
+		message = tcpConn.RemoteAddr().String() + ":" + message
+		fmt.Println(message)
 
-		// 向所有人发话
-		for _, conn := range connMap {
-			conn.Write(pack)
-		}
+		// use pack do what you want ...
+		broadcastMessage(message)
 	}
 }
 
@@ -147,4 +146,21 @@ func readServerPort() string {
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
 	checkError(err)
 	return port
+}
+
+func broadcastMessage(message string) {
+	msgLength := int32(len(message))
+	buff := new(bytes.Buffer)
+	err := binary.Write(buff, binary.LittleEndian, msgLength)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	buff.WriteString(message)
+
+	// 向所有人发话
+	for _, conn := range connMap {
+		conn.Write(buff.Bytes())
+	}
+
 }
