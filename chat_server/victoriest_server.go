@@ -18,7 +18,7 @@ import (
 var quitSp chan bool
 
 // 客户端连接Map
-var connMap map[int]*net.TCPConn
+var connMap map[string]*net.TCPConn
 
 func main() {
 	// 启动服务goroutine
@@ -35,16 +35,16 @@ func startUp() {
 
 	// 构造tcpAddress
 	tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
-	checkError(err)
+	checkError(err, true)
 
 	// 创建TCP监听
 	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err)
+	checkError(err, true)
 	defer tcpListener.Close()
 	fmt.Println("start listen ", tcpListener.Addr().String())
 
 	// tcpConn的map
-	connMap = make(map[int]*net.TCPConn)
+	connMap = make(map[string]*net.TCPConn)
 	// 退出信号channel
 	quitSp = make(chan bool)
 
@@ -70,37 +70,46 @@ func shutDown() {
 	fmt.Println("shutdown")
 }
 
-func checkError(err error) {
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(2)
-	}
-}
-
 /**
  * 一客户端一线程
  */
 func tcpHandler(tcpConn net.TCPConn) {
-	defer tcpConn.Close()
+	ipStr := tcpConn.RemoteAddr().String()
+	defer func() {
+		fmt.Println("disconnected :" + ipStr)
+		broadcastMessage("disconnected :" + ipStr)
+		tcpConn.Close()
+		delete(connMap, ipStr)
+		fmt.Println(len(connMap))
+	}()
+	broadcastMessage("A new connection :" + ipStr)
 	for {
 		reader := bufio.NewReaderSize(&tcpConn, 128)
-		buff, _ := reader.Peek(4)
+		buff, err := reader.Peek(4)
+		checkError(err, false)
+		if err != nil {
+			break
+		}
 		data := bytes.NewBuffer(buff)
 		var length int32
-		err := binary.Read(data, binary.LittleEndian, &length)
-		checkError(err)
-		fmt.Println(length)
+		err = binary.Read(data, binary.LittleEndian, &length)
+		checkError(err, false)
+		if err != nil {
+			return
+		}
 		if int32(reader.Buffered()) < length+4 {
 			fmt.Println("int32(reader.Buffered()) < length+4")
 			_, err := reader.Peek(int(4 + length))
+			checkError(err, false)
 			if err != nil {
 				return
 			}
 		}
 		pack := make([]byte, int(4+length))
 		_, err = reader.Read(pack)
+		checkError(err, false)
 		if err != nil {
-			break
+			return
 		}
 		message := string(pack[4:])
 		message = tcpConn.RemoteAddr().String() + ":" + message
@@ -114,7 +123,7 @@ func tcpHandler(tcpConn net.TCPConn) {
 /**
  * 客户端连接管理器
  */
-func initConnectionManager(connMap map[int]*net.TCPConn, tcpListener *net.TCPListener) {
+func initConnectionManager(connMap map[string]*net.TCPConn, tcpListener *net.TCPListener) {
 
 	i := 0
 	for {
@@ -126,7 +135,7 @@ func initConnectionManager(connMap map[int]*net.TCPConn, tcpListener *net.TCPLis
 		}
 		// connChan <- tcpConn
 
-		connMap[i] = tcpConn
+		connMap[tcpConn.RemoteAddr().String()] = tcpConn
 		i++
 
 		fmt.Println("a client connected : ", tcpConn.RemoteAddr().String())
@@ -142,9 +151,9 @@ func readServerPort() string {
 	fmt.Println(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
-	checkError(err)
+	checkError(err, true)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
-	checkError(err)
+	checkError(err, true)
 	return port
 }
 
@@ -163,4 +172,18 @@ func broadcastMessage(message string) {
 		conn.Write(buff.Bytes())
 	}
 
+}
+
+func boradcastConnectingMessage(conn *net.TCPConn) {
+	message := "A new connection :" + conn.RemoteAddr().String()
+	broadcastMessage(message)
+}
+
+func checkError(err error, isQuit bool) {
+	if err != nil {
+		fmt.Println(err.Error())
+		if isQuit {
+			os.Exit(2)
+		}
+	}
 }

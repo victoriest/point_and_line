@@ -34,7 +34,7 @@ func main() {
 	go readerPipe(conn)
 	writerPipe(conn)
 
-	// <-quitSp
+	<-quitSp
 }
 
 func writerPipe(conn *net.TCPConn) {
