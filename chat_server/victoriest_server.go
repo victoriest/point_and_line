@@ -2,9 +2,10 @@ package main
 
 import (
 	"./goconfig"
+	"./probe"
 	"bufio"
-	"bytes"
-	"encoding/binary"
+	// "bytes"
+	// "encoding/binary"
 	"fmt"
 	"net"
 	"os"
@@ -83,36 +84,13 @@ func tcpHandler(tcpConn net.TCPConn) {
 		fmt.Println(len(connMap))
 	}()
 	broadcastMessage("A new connection :" + ipStr)
+	reader := bufio.NewReader(&tcpConn)
 	for {
-		reader := bufio.NewReaderSize(&tcpConn, 128)
-		buff, err := reader.Peek(4)
-		checkError(err, false)
-		if err != nil {
-			break
-		}
-		data := bytes.NewBuffer(buff)
-		var length int32
-		err = binary.Read(data, binary.LittleEndian, &length)
-		checkError(err, false)
+		message, err := probe.Decoding(reader)
 		if err != nil {
 			return
 		}
-		if int32(reader.Buffered()) < length+4 {
-			fmt.Println("int32(reader.Buffered()) < length+4")
-			_, err := reader.Peek(int(4 + length))
-			checkError(err, false)
-			if err != nil {
-				return
-			}
-		}
-		pack := make([]byte, int(4+length))
-		_, err = reader.Read(pack)
-		checkError(err, false)
-		if err != nil {
-			return
-		}
-		message := string(pack[4:])
-		message = tcpConn.RemoteAddr().String() + ":" + message
+		// message = tcpConn.RemoteAddr().String() + ":" + string(message)
 		fmt.Println(message)
 
 		// use pack do what you want ...
@@ -127,13 +105,11 @@ func initConnectionManager(connMap map[string]*net.TCPConn, tcpListener *net.TCP
 
 	i := 0
 	for {
-		// var tcpConn *net.TCPConn
 		tcpConn, err := tcpListener.AcceptTCP()
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
 		}
-		// connChan <- tcpConn
 
 		connMap[tcpConn.RemoteAddr().String()] = tcpConn
 		i++
@@ -157,19 +133,11 @@ func readServerPort() string {
 	return port
 }
 
-func broadcastMessage(message string) {
-	msgLength := int32(len(message))
-	buff := new(bytes.Buffer)
-	err := binary.Write(buff, binary.LittleEndian, msgLength)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	buff.WriteString(message)
-
+func broadcastMessage(message interface{}) {
+	buff, _ := probe.Encoding(message)
 	// 向所有人发话
 	for _, conn := range connMap {
-		conn.Write(buff.Bytes())
+		conn.Write(buff)
 	}
 
 }

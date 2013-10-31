@@ -2,16 +2,15 @@ package main
 
 import (
 	"../goconfig"
+	"../probe"
 	"bufio"
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
-	// "time"
+	"strings"
 )
 
 // 退出信号量
@@ -23,6 +22,7 @@ func main() {
 	fmt.Println(addr)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	checkError(err)
+
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	checkError(err)
 	defer conn.Close()
@@ -32,52 +32,37 @@ func main() {
 	quitSp = make(chan bool)
 
 	go readerPipe(conn)
-	writerPipe(conn)
+	go writerPipe(conn)
 
 	<-quitSp
+}
+
+type StrMsg struct {
+	Msg string
 }
 
 func writerPipe(conn *net.TCPConn) {
 	for {
 		var msg string
 		fmt.Scanln(&msg)
-		fmt.Println(msg)
 
-		writer := bufio.NewWriterSize(conn, 16)
-		// message := time.Now().String()
-		strBuf := GenStringBuff(msg)
-		writer.Write(strBuf.Bytes())
-		writer.Flush()
-		if msg == "quit" {
+		if strings.EqualFold(msg, "quit") {
 			quitSp <- true
 			break
 		}
-		// time.Sleep(time.Second * 2)
+		writer := bufio.NewWriter(conn)
+		strBuf, _ := probe.Encoding(msg)
+		fmt.Println(strBuf)
+		writer.Write(strBuf)
+		writer.Flush()
 	}
+
 }
 
 func readerPipe(conn *net.TCPConn) {
+	reader := bufio.NewReader(conn)
 	for {
-		reader := bufio.NewReaderSize(conn, 128)
-		buff, _ := reader.Peek(4)
-		data := bytes.NewBuffer(buff)
-		var length int32
-		err := binary.Read(data, binary.LittleEndian, &length)
-		checkError(err)
-		fmt.Println(length)
-		if int32(reader.Buffered()) < length+4 {
-			fmt.Println("int32(reader.Buffered()) < length+4")
-			_, err := reader.Peek(int(4 + length))
-			if err != nil {
-				return
-			}
-		}
-		pack := make([]byte, int(4+length))
-		_, err = reader.Read(pack)
-		// if err != nil {
-		// 	break
-		// }
-		message := string(pack[4:])
+		message, _ := probe.Decoding(reader)
 		fmt.Println(message)
 	}
 }
@@ -106,14 +91,15 @@ func readServerConfig() (string, string) {
 	return host, port
 }
 
-func GenStringBuff(str string) *bytes.Buffer {
-	lenBuf := new(bytes.Buffer)
-	var length int32 = int32(len(str))
-	err := binary.Write(lenBuf, binary.LittleEndian, length)
-	if err != nil {
-		fmt.Println(err.Error())
-		return lenBuf
-	}
-	lenBuf.WriteString(str)
-	return lenBuf
-}
+// func GenStringBuff(str string) *bytes.Buffer {
+// 	lenBuf := new(bytes.Buffer)
+// 	var length int32 = int32(len(str))
+// 	err := binary.Write(lenBuf, binary.LittleEndian, length)
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 		return lenBuf
+// 	}
+// 	lenBuf.WriteString(str)
+
+// 	return lenBuf
+// }
