@@ -2,10 +2,8 @@ package main
 
 import (
 	"./goconfig"
-	"./probe"
+	"./victoriest.org/probe"
 	"bufio"
-	// "bytes"
-	// "encoding/binary"
 	"fmt"
 	"net"
 	"os"
@@ -86,7 +84,8 @@ func tcpHandler(tcpConn net.TCPConn) {
 	broadcastMessage("A new connection :" + ipStr)
 	reader := bufio.NewReader(&tcpConn)
 	for {
-		message, err := probe.Decoding(reader)
+		jsonProbe := new(probe.JsonProbe)
+		message, err := jsonProbe.Decoding(reader)
 		if err != nil {
 			return
 		}
@@ -134,12 +133,12 @@ func readServerPort() string {
 }
 
 func broadcastMessage(message interface{}) {
-	buff, _ := probe.Encoding(message)
+	jsonProbe := new(probe.JsonProbe)
+	buff, _ := jsonProbe.Encoding(message)
 	// 向所有人发话
 	for _, conn := range connMap {
 		conn.Write(buff)
 	}
-
 }
 
 func boradcastConnectingMessage(conn *net.TCPConn) {

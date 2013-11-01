@@ -1,18 +1,31 @@
 package probe
 
 /**
- * 用于序列化的包
+ * 序列化与反序列化的包
  */
 import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
-	// "encoding/gob"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 )
 
-func Encoding(obj interface{}) ([]byte, error) {
+// 序列化接口
+type Serializable interface {
+	Serialize(src interface{}) ([]byte, error)
+	Deserialize(src []byte, dst interface{}) (interface{}, error)
+}
+
+// 
+type Codecable interface {
+}
+
+// Josn的序列化实现
+type JsonProbe struct{}
+
+func (self JsonProbe) Encoding(obj interface{}) ([]byte, error) {
 	var v []byte
 	var err error
 
@@ -40,7 +53,7 @@ func Encoding(obj interface{}) ([]byte, error) {
 	return pkg.Bytes(), nil
 }
 
-func Decoding(reader *bufio.Reader) (interface{}, error) {
+func (self JsonProbe) Decoding(reader *bufio.Reader) (interface{}, error) {
 	buff, _ := reader.Peek(4)
 	data := bytes.NewBuffer(buff)
 	var length int32
@@ -75,29 +88,24 @@ func Decoding(reader *bufio.Reader) (interface{}, error) {
 	return dst, nil
 }
 
-// type LGISerialize interface {
-// 	Serialize(src interface{}) (dst []byte, err error)
-// 	Deserialize(src []byte, dst interface{}) (err error)
-// }
+// Gob的序列化实现
+type GobProbe struct{}
 
-// type LGGobSerialize struct {
-// }
+// gob的序列化方法实现
+func (self GobProbe) Serialize(src interface{}) (v []byte, err error) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err = enc.Encode(src)
+	if err != nil {
+		return
+	}
+	v = buf.Bytes()
+	return
+}
 
-// // serialize encodes a value using gob.
-// func (self LGGobSerialize) Serialize(src interface{}) (v []byte, err error) {
-// 	buf := new(bytes.Buffer)
-// 	enc := gob.NewEncoder(buf)
-// 	err = enc.Encode(src)
-// 	if err != nil {
-// 		return
-// 	}
-// 	v = buf.Bytes()
-// 	return
-// }
-
-// // deserialize decodes a value using gob.
-// func (self LGGobSerialize) Deserialize(src []byte, dst interface{}) (err error) {
-// 	dec := gob.NewDecoder(bytes.NewBuffer(src))
-// 	err = dec.Decode(dst)
-// 	return
-// }
+// gob的反序列化方法实现
+func (self GobProbe) Deserialize(src []byte, dst interface{}) (err error) {
+	dec := gob.NewDecoder(bytes.NewBuffer(src))
+	err = dec.Decode(dst)
+	return
+}

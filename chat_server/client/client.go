@@ -2,7 +2,7 @@ package main
 
 import (
 	"../goconfig"
-	"../probe"
+	"../victoriest.org/probe"
 	"bufio"
 	"fmt"
 	"net"
@@ -42,6 +42,8 @@ type StrMsg struct {
 }
 
 func writerPipe(conn *net.TCPConn) {
+	jsonProbe := new(probe.JsonProbe)
+	writer := bufio.NewWriter(conn)
 	for {
 		var msg string
 		fmt.Scanln(&msg)
@@ -50,8 +52,7 @@ func writerPipe(conn *net.TCPConn) {
 			quitSp <- true
 			break
 		}
-		writer := bufio.NewWriter(conn)
-		strBuf, _ := probe.Encoding(msg)
+		strBuf, _ := jsonProbe.Encoding(msg)
 		fmt.Println(strBuf)
 		writer.Write(strBuf)
 		writer.Flush()
@@ -61,8 +62,9 @@ func writerPipe(conn *net.TCPConn) {
 
 func readerPipe(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
+	jsonProbe := new(probe.JsonProbe)
 	for {
-		message, _ := probe.Decoding(reader)
+		message, _ := jsonProbe.Decoding(reader)
 		fmt.Println(message)
 	}
 }
