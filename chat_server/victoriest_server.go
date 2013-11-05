@@ -85,7 +85,7 @@ func tcpHandler(tcpConn net.TCPConn) {
 	reader := bufio.NewReader(&tcpConn)
 	for {
 		jsonProbe := new(probe.JsonProbe)
-		message, err := jsonProbe.Decoding(reader)
+		message, err := jsonProbe.DeserializeByReader(reader)
 		if err != nil {
 			return
 		}
@@ -134,7 +134,7 @@ func readServerPort() string {
 
 func broadcastMessage(message interface{}) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Encoding(message)
+	buff, _ := jsonProbe.Serialize(message)
 	// 向所有人发话
 	for _, conn := range connMap {
 		conn.Write(buff)

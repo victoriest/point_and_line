@@ -52,19 +52,18 @@ func writerPipe(conn *net.TCPConn) {
 			quitSp <- true
 			break
 		}
-		strBuf, _ := jsonProbe.Encoding(msg)
+		strBuf, _ := jsonProbe.Serialize(msg)
 		fmt.Println(strBuf)
 		writer.Write(strBuf)
 		writer.Flush()
 	}
-
 }
 
 func readerPipe(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	jsonProbe := new(probe.JsonProbe)
 	for {
-		message, _ := jsonProbe.Decoding(reader)
+		message, _ := jsonProbe.DeserializeByReader(reader)
 		fmt.Println(message)
 	}
 }

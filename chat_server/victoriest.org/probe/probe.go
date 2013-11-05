@@ -2,6 +2,7 @@ package probe
 
 /**
  * 序列化与反序列化的包
+ * 序列化后的格式为: int32的包长度信息+包内容
  */
 import (
 	"bufio"
@@ -15,21 +16,20 @@ import (
 // 序列化接口
 type Serializable interface {
 	Serialize(src interface{}) ([]byte, error)
+	DeserializeByReader(reader *bufio.Reader) (interface{}, error)
 	Deserialize(src []byte, dst interface{}) (interface{}, error)
 }
 
-// 
-type Codecable interface {
-}
+type Codecable interface{}
 
 // Josn的序列化实现
 type JsonProbe struct{}
 
-func (self JsonProbe) Encoding(obj interface{}) ([]byte, error) {
+func (self JsonProbe) Serialize(src interface{}) ([]byte, error) {
 	var v []byte
 	var err error
 
-	v, err = json.Marshal(obj)
+	v, err = json.Marshal(src)
 	if err != nil {
 		fmt.Println("when Encoding:", err.Error())
 		return nil, err
@@ -53,13 +53,13 @@ func (self JsonProbe) Encoding(obj interface{}) ([]byte, error) {
 	return pkg.Bytes(), nil
 }
 
-func (self JsonProbe) Decoding(reader *bufio.Reader) (interface{}, error) {
+func (self JsonProbe) DeserializeByReader(reader *bufio.Reader) (interface{}, error) {
 	buff, _ := reader.Peek(4)
 	data := bytes.NewBuffer(buff)
 	var length int32
 	err := binary.Read(data, binary.LittleEndian, &length)
 	if err != nil {
-		fmt.Println("when Encoding1:", err.Error())
+		fmt.Println("when Deserialize:", err.Error())
 		return nil, err
 	}
 
@@ -73,16 +73,19 @@ func (self JsonProbe) Decoding(reader *bufio.Reader) (interface{}, error) {
 	pack := make([]byte, int(4+length))
 	_, err = reader.Read(pack)
 	if err != nil {
-		fmt.Println("when Encoding2:", err.Error())
+		fmt.Println("when Deserialize:", err.Error())
 		return nil, err
 	}
 
-	msg := pack[4:]
-	fmt.Println(msg)
 	var dst interface{}
-	err = json.Unmarshal(msg, &dst)
+	return self.Deserialize(pack, dst)
+}
+
+func (self JsonProbe) Deserialize(src []byte, dst interface{}) (interface{}, error) {
+	msg := src[4:]
+	err := json.Unmarshal(msg, &dst)
 	if err != nil {
-		fmt.Println("when Encoding3:", err.Error())
+		fmt.Println("when Deserialize:", err.Error())
 		return nil, err
 	}
 	return dst, nil
