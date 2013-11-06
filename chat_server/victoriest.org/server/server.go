@@ -2,10 +2,10 @@ package server
 
 import (
 	"../probe"
+	"../utils"
 	"bufio"
 	log "code.google.com/p/log4go"
 	"net"
-	"os"
 )
 
 type IVictoriestServer interface {
@@ -61,11 +61,11 @@ func (self *VictoriestServer) Startup() {
 
 	// 构造tcpAddress
 	tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
-	checkError(err, true)
+	utils.CheckError(err, true)
 
 	// 创建TCP监听
 	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err, true)
+	utils.CheckError(err, true)
 	defer tcpListener.Close()
 	log.Debug("Start listen ", tcpListener.Addr().String())
 
@@ -117,14 +117,5 @@ func (self *VictoriestServer) broadcastMessage(message interface{}) {
 	// 向所有人发话
 	for _, conn := range self.connMap {
 		conn.Write(buff)
-	}
-}
-
-func checkError(err error, isQuit bool) {
-	if err != nil {
-		log.Error(err.Error())
-		if isQuit {
-			os.Exit(2)
-		}
 	}
 }

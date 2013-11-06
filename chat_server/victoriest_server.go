@@ -3,6 +3,7 @@ package main
 import (
 	"./goconfig"
 	vserv "./victoriest.org/server"
+	"./victoriest.org/utils"
 	log "code.google.com/p/log4go"
 	"os"
 	"os/exec"
@@ -37,17 +38,8 @@ func readServerPort() string {
 	log.Info(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
-	checkError(err, true)
+	utils.CheckError(err, true)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
-	checkError(err, true)
+	utils.CheckError(err, true)
 	return port
-}
-
-func checkError(err error, isQuit bool) {
-	if err != nil {
-		log.Error(err.Error())
-		if isQuit {
-			os.Exit(2)
-		}
-	}
 }
