@@ -2,10 +2,8 @@ package main
 
 import (
 	"./goconfig"
-	"./victoriest.org/probe"
-	"bufio"
-	"fmt"
-	"net"
+	vserv "./victoriest.org/server"
+	log "code.google.com/p/log4go"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -16,106 +14,19 @@ import (
 // 退出信号量
 var quitSp chan bool
 
-// 客户端连接Map
-var connMap map[string]*net.TCPConn
-
 func main() {
-	// 启动服务goroutine
-	go startUp()
-	shutDown()
-}
+	log.LoadConfiguration("./log4go.config")
 
-/**
- * 初始化服务器
- */
-func startUp() {
-	// 从配置文件中读取port
-	strAddr := ":" + readServerPort()
-
-	// 构造tcpAddress
-	tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
-	checkError(err, true)
-
-	// 创建TCP监听
-	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err, true)
-	defer tcpListener.Close()
-	fmt.Println("start listen ", tcpListener.Addr().String())
-
-	// tcpConn的map
-	connMap = make(map[string]*net.TCPConn)
-	// 退出信号channel
-	quitSp = make(chan bool)
-
-	// 连接管理
-	initConnectionManager(connMap, tcpListener)
-}
-
-/**
- * 关闭服务器指令
- */
-func shutDown() {
 	// 监测退出程序的信号量
 	sign := make(chan os.Signal, 1)
+
+	server := vserv.NewVictoriestServer(readServerPort())
+	server.Startup()
+
 	signal.Notify(sign, os.Interrupt, os.Kill)
 	<-sign
-	fmt.Println(len(connMap))
-
-	// 关闭所有连接
-	for _, conn := range connMap {
-		fmt.Println("close:", conn.RemoteAddr().String())
-		conn.Close()
-	}
-	fmt.Println("shutdown")
-}
-
-/**
- * 一客户端一线程
- */
-func tcpHandler(tcpConn net.TCPConn) {
-	ipStr := tcpConn.RemoteAddr().String()
-	defer func() {
-		fmt.Println("disconnected :" + ipStr)
-		broadcastMessage("disconnected :" + ipStr)
-		tcpConn.Close()
-		delete(connMap, ipStr)
-		fmt.Println(len(connMap))
-	}()
-	broadcastMessage("A new connection :" + ipStr)
-	reader := bufio.NewReader(&tcpConn)
-	for {
-		jsonProbe := new(probe.JsonProbe)
-		message, err := jsonProbe.DeserializeByReader(reader)
-		if err != nil {
-			return
-		}
-		// message = tcpConn.RemoteAddr().String() + ":" + string(message)
-		fmt.Println(message)
-
-		// use pack do what you want ...
-		broadcastMessage(message)
-	}
-}
-
-/**
- * 客户端连接管理器
- */
-func initConnectionManager(connMap map[string]*net.TCPConn, tcpListener *net.TCPListener) {
-
-	i := 0
-	for {
-		tcpConn, err := tcpListener.AcceptTCP()
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-
-		connMap[tcpConn.RemoteAddr().String()] = tcpConn
-		i++
-
-		fmt.Println("a client connected : ", tcpConn.RemoteAddr().String())
-		go tcpHandler(*tcpConn)
-	}
+	log.Info("quit")
+	server.Shutdown()
 }
 
 /**
@@ -123,7 +34,7 @@ func initConnectionManager(connMap map[string]*net.TCPConn, tcpListener *net.TCP
  */
 func readServerPort() string {
 	exefile, _ := exec.LookPath(os.Args[0])
-	fmt.Println(filepath.Dir(exefile))
+	log.Info(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
 	checkError(err, true)
@@ -132,23 +43,9 @@ func readServerPort() string {
 	return port
 }
 
-func broadcastMessage(message interface{}) {
-	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message)
-	// 向所有人发话
-	for _, conn := range connMap {
-		conn.Write(buff)
-	}
-}
-
-func boradcastConnectingMessage(conn *net.TCPConn) {
-	message := "A new connection :" + conn.RemoteAddr().String()
-	broadcastMessage(message)
-}
-
 func checkError(err error, isQuit bool) {
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Error(err.Error())
 		if isQuit {
 			os.Exit(2)
 		}
