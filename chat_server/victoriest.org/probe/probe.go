@@ -96,19 +96,79 @@ type GobProbe struct{}
 
 // gob的序列化方法实现
 func (self GobProbe) Serialize(src interface{}) (v []byte, err error) {
+	// buf := new(bytes.Buffer)
+	// enc := gob.NewEncoder(buf)
+	// err = enc.Encode(src)
+	// if err != nil {
+	// 	return
+	// }
+	// v = buf.Bytes()
+	// return
+
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 	err = enc.Encode(src)
+
 	if err != nil {
-		return
+		fmt.Println("when Encoding:", err.Error())
+		return nil, err
 	}
 	v = buf.Bytes()
-	return
+	var length int32 = int32(len(v))
+
+	pkg := new(bytes.Buffer)
+	err = binary.Write(pkg, binary.LittleEndian, length)
+	if err != nil {
+		fmt.Println("when Encoding:", err.Error())
+		return nil, err
+	}
+
+	err = binary.Write(pkg, binary.LittleEndian, v)
+	if err != nil {
+		fmt.Println("when Encoding:", err.Error())
+		return nil, err
+	}
+
+	return pkg.Bytes(), nil
 }
 
 // gob的反序列化方法实现
-func (self GobProbe) Deserialize(src []byte, dst interface{}) (err error) {
-	dec := gob.NewDecoder(bytes.NewBuffer(src))
-	err = dec.Decode(dst)
-	return
+func (self GobProbe) DeserializeGob(src []byte, dst interface{}) (interface{}, error) {
+	msg := src[4:]
+	dec := gob.NewDecoder(bytes.NewBuffer(msg))
+	err := dec.Decode(dst)
+
+	if err != nil {
+		fmt.Println("when Deserialize1:", err.Error())
+		return nil, err
+	}
+	return dst, nil
+}
+
+func (self GobProbe) DeserializeByReader(reader *bufio.Reader) (interface{}, error) {
+	buff, _ := reader.Peek(4)
+	data := bytes.NewBuffer(buff)
+	var length int32
+	err := binary.Read(data, binary.LittleEndian, &length)
+	if err != nil {
+		fmt.Println("when Deserialize2:", err.Error())
+		return nil, err
+	}
+
+	if int32(reader.Buffered()) < length+4 {
+		fmt.Println("int32(reader.Buffered()) < length+4")
+		_, err := reader.Peek(int(4 + length))
+		if err != nil {
+			return nil, err
+		}
+	}
+	pack := make([]byte, int(4+length))
+	_, err = reader.Read(pack)
+	if err != nil {
+		fmt.Println("when Deserialize3:", err.Error())
+		return nil, err
+	}
+
+	var dst interface{}
+	return self.DeserializeGob(pack, dst)
 }

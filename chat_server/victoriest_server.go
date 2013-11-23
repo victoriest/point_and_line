@@ -7,27 +7,27 @@ import (
 	log "code.google.com/p/log4go"
 	"os"
 	"os/exec"
-	"os/signal"
+	// "os/signal"
 	"path"
 	"path/filepath"
 )
 
 // 退出信号量
-var quitSp chan bool
+// var quitSp chan bool
 
 func main() {
 	log.LoadConfiguration("./log4go.config")
 
-	// 监测退出程序的信号量
-	sign := make(chan os.Signal, 1)
+	// // 监测退出程序的信号量
+	// sign := make(chan os.Signal, 1)
 
 	server := vserv.NewVictoriestServer(readServerPort())
 	server.Startup()
 
-	signal.Notify(sign, os.Interrupt, os.Kill)
-	<-sign
-	log.Info("quit")
-	server.Shutdown()
+	// signal.Notify(sign, os.Interrupt, os.Kill)
+	// <-sign
+	// log.Info("quit")
+	// server.Shutdown()
 }
 
 /**

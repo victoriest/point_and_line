@@ -4,7 +4,7 @@ import (
 	"./goconfig"
 	vcli "./victoriest.org/client"
 	"./victoriest.org/utils"
-	"fmt"
+	// "fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -18,9 +18,8 @@ func main() {
 
 func readServerConfig() (string, string) {
 	exefile, _ := exec.LookPath(os.Args[0])
-	fmt.Println(filepath.Dir(exefile))
 
-	filepath := path.Join(filepath.Dir(exefile), "./client.config")
+	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
 	utils.CheckError(err, true)
 
