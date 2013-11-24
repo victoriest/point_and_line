@@ -99,18 +99,19 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 	self.broadcastMessage("A new connection :" + ipStr)
 	reader := bufio.NewReader(&tcpConn)
 	for {
-		jsonProbe := new(probe.GobProbe)
-		message, err := jsonProbe.DeserializeByReader(reader)
+		jsonProbe := new(probe.JsonProbe)
+		var message interface{}
+		err := jsonProbe.DeserializeByReader(reader, message)
 		if err != nil {
 			return
 		}
 
-		switch obj := message.(type) {
-		case probe.VictoriestMsg:
-			log.Debug("est", obj.MsgContext)
-		default:
-			log.Debug("not a VictoriestMsg")
-		}
+		// switch obj := (interface{}(message)).(type) {
+		// case probe.VictoriestMsg:
+		// 	log.Debug("est", obj.MsgContext)
+		// default:
+		// 	log.Debug("not a VictoriestMsg  ", obj)
+		// }
 
 		// log.Debug(message.(probe.VictoriestMsg).MegContext)
 
@@ -120,7 +121,7 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 }
 
 func (self *VictoriestServer) broadcastMessage(message interface{}) {
-	jsonProbe := new(probe.GobProbe)
+	jsonProbe := new(probe.JsonProbe)
 	buff, _ := jsonProbe.Serialize(message)
 	// 向所有人发话
 	for _, conn := range self.connMap {

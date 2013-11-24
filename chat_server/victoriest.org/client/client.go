@@ -48,7 +48,7 @@ func (self *VictoriestClient) Startup() {
 }
 
 func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
-	jsonProbe := new(probe.GobProbe)
+	jsonProbe := new(probe.JsonProbe)
 	writer := bufio.NewWriter(conn)
 	for {
 		var msg string
@@ -60,15 +60,14 @@ func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
 		}
 
 		msgObj := probe.VictoriestMsg{MsgType: 1, MsgContext: msg}
-		// switch obj := msgObj.(type) {
+		// switch obj := interface{}(msgObj).(type) {
 		// case probe.VictoriestMsg:
-		// 	log.Debug("write", obj.MsgContext)
+		// 	log.Debug("write", obj)
 		// default:
 		// 	log.Debug("write not a VictoriestMsg")
 		// }
 
 		strBuf, _ := jsonProbe.Serialize(msgObj)
-		// fmt.Println(strBuf)
 		writer.Write(strBuf)
 		writer.Flush()
 	}
@@ -76,17 +75,17 @@ func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
 
 func (self *VictoriestClient) readerPipe(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
-	jsonProbe := new(probe.GobProbe)
+	jsonProbe := new(probe.JsonProbe)
 	for {
-		message, err := jsonProbe.DeserializeByReader(reader)
-		switch obj := message.(type) {
+		var message interface{}
+		err := jsonProbe.DeserializeByReader(reader, message)
+
+		switch obj := (interface{}(message)).(type) {
 		case probe.VictoriestMsg:
 			log.Debug(obj.MsgContext)
 		default:
-			log.Debug("not a VictoriestMsg")
+			log.Debug("not a VictoriestMsg  ", obj)
 		}
 		utils.CheckError(err, true)
-		// .(probe.VictoriestMsg).MsgContext
-		// log.Debug(message)
 	}
 }
