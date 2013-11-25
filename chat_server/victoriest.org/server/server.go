@@ -2,6 +2,7 @@ package server
 
 import (
 	"../probe"
+	"../protocol"
 	"../utils"
 	"bufio"
 	log "code.google.com/p/log4go"
@@ -100,29 +101,19 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 	reader := bufio.NewReader(&tcpConn)
 	for {
 		jsonProbe := new(probe.JsonProbe)
-		var message interface{}
-		err := jsonProbe.DeserializeByReader(reader, message)
+		message, _, err := jsonProbe.DeserializeByReader(reader)
 		if err != nil {
 			return
 		}
-
-		// switch obj := (interface{}(message)).(type) {
-		// case probe.VictoriestMsg:
-		// 	log.Debug("est", obj.MsgContext)
-		// default:
-		// 	log.Debug("not a VictoriestMsg  ", obj)
-		// }
-
-		// log.Debug(message.(probe.VictoriestMsg).MegContext)
-
-		// use pack do what you want ...
+		log.Debug(message)
+		// TODO : use pack do what you want ...
 		self.broadcastMessage(message)
 	}
 }
 
 func (self *VictoriestServer) broadcastMessage(message interface{}) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message)
+	buff, _ := jsonProbe.Serialize(message, protocol.MSG_TYPE_TEST_MESSGAE)
 	// 向所有人发话
 	for _, conn := range self.connMap {
 		conn.Write(buff)

@@ -2,6 +2,7 @@ package client
 
 import (
 	"../probe"
+	"../protocol"
 	"../utils"
 	"bufio"
 	log "code.google.com/p/log4go"
@@ -59,15 +60,8 @@ func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
 			break
 		}
 
-		msgObj := probe.VictoriestMsg{MsgType: 1, MsgContext: msg}
-		// switch obj := interface{}(msgObj).(type) {
-		// case probe.VictoriestMsg:
-		// 	log.Debug("write", obj)
-		// default:
-		// 	log.Debug("write not a VictoriestMsg")
-		// }
-
-		strBuf, _ := jsonProbe.Serialize(msgObj)
+		msgObj := probe.VictoriestMsg{MsgContext: msg}
+		strBuf, _ := jsonProbe.Serialize(msgObj, protocol.MSG_TYPE_TEST_MESSGAE)
 		writer.Write(strBuf)
 		writer.Flush()
 	}
@@ -78,14 +72,15 @@ func (self *VictoriestClient) readerPipe(conn *net.TCPConn) {
 	jsonProbe := new(probe.JsonProbe)
 	for {
 		var message interface{}
-		err := jsonProbe.DeserializeByReader(reader, message)
+		message, msgType, err := jsonProbe.DeserializeByReader(reader)
 
 		switch obj := (interface{}(message)).(type) {
 		case probe.VictoriestMsg:
 			log.Debug(obj.MsgContext)
 		default:
-			log.Debug("not a VictoriestMsg  ", obj)
+			log.Debug("not a VictoriestMsg  ", message, "  ", msgType)
 		}
+		// log.Debug((probe.VictoriestMsg(message)).MsgContext)
 		utils.CheckError(err, true)
 	}
 }

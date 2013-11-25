@@ -18,7 +18,6 @@ func main() {
 func readServerConfig() (string, string) {
 	exefile, _ := exec.LookPath(os.Args[0])
 
-
 	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
 	utils.CheckError(err, true)
