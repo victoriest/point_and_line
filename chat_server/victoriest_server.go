@@ -22,6 +22,7 @@ func main() {
 	// sign := make(chan os.Signal, 1)
 
 	server := vserv.NewVictoriestServer(readServerPort())
+	server.Handler = tcpHandler
 	server.Startup()
 
 	// signal.Notify(sign, os.Interrupt, os.Kill)
@@ -42,4 +43,9 @@ func readServerPort() string {
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
 	utils.CheckError(err, true)
 	return port
+}
+
+func tcpHandler(server *vserv.VictoriestServer, message interface{}) {
+	log.Debug(message)
+	server.BroadcastMessage(message)
 }

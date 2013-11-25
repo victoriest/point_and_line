@@ -14,6 +14,8 @@ type IVictoriestServer interface {
 	Shutdown()
 }
 
+type ServerHandler func(*VictoriestServer, interface{})
+
 type VictoriestServer struct {
 	// 服务端端口号
 	port string
@@ -21,6 +23,8 @@ type VictoriestServer struct {
 	quitSp chan bool
 	// 客户端连接Map
 	connMap map[string]*net.TCPConn
+	//
+	Handler ServerHandler
 }
 
 func NewVictoriestServer(port string) *VictoriestServer {
@@ -37,7 +41,6 @@ func NewVictoriestServer(port string) *VictoriestServer {
  * 客户端连接管理器
  */
 func (self *VictoriestServer) initConnectionManager(tcpListener *net.TCPListener) {
-
 	i := 0
 	for {
 		tcpConn, err := tcpListener.AcceptTCP()
@@ -93,11 +96,11 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 	ipStr := tcpConn.RemoteAddr().String()
 	defer func() {
 		log.Debug("disconnected :" + ipStr)
-		self.broadcastMessage("disconnected :" + ipStr)
+		self.BroadcastMessage("disconnected :" + ipStr)
 		tcpConn.Close()
 		delete(self.connMap, ipStr)
 	}()
-	self.broadcastMessage("A new connection :" + ipStr)
+	self.BroadcastMessage("A new connection :" + ipStr)
 	reader := bufio.NewReader(&tcpConn)
 	for {
 		jsonProbe := new(probe.JsonProbe)
@@ -105,13 +108,12 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 		if err != nil {
 			return
 		}
-		log.Debug(message)
-		// TODO : use pack do what you want ...
-		self.broadcastMessage(message)
+		// use pack do what you want ...
+		self.Handler(self, message)
 	}
 }
 
-func (self *VictoriestServer) broadcastMessage(message interface{}) {
+func (self *VictoriestServer) BroadcastMessage(message interface{}) {
 	jsonProbe := new(probe.JsonProbe)
 	buff, _ := jsonProbe.Serialize(message, protocol.MSG_TYPE_TEST_MESSGAE)
 	// 向所有人发话

@@ -2,8 +2,8 @@ package probe
 
 import (
 	"../protocol"
-	"bufio"
-	"bytes"
+	// "bufio"
+	// "bytes"
 	"testing"
 )
 
@@ -26,17 +26,13 @@ func testUtil(probe *JsonProbe, t *testing.T) {
 	// 反序列化
 	var dest VictoriestMsg
 	var mst int32
-	reader := bufio.NewReader(bytes.NewBuffer(bt))
-	// mst, err = probe.Deserialize(bt, &dest)
-	mst, err = probe.DeserializeByReader(reader, &dest)
+	mst, err = probe.Deserialize(bt, &dest)
+	// reader := bufio.NewReader(bytes.NewBuffer(bt))
+	// dest, mst, err = probe.DeserializeByReader(reader)
 	if err != nil {
 		t.Error("error on probe.Deserialize")
 	}
-	t.Log("success on probe.Deserialize  ", dest, "  ", mst)
-	_, ok := (interface{}(dest)).(VictoriestMsg)
-	if !ok {
-		t.Error("dest is not VictoriestMsg")
-	}
+	t.Log("success on probe.Deserialize  ", dest.MsgContext, "  ", mst)
 }
 
 func TestJsonProbe(t *testing.T) {
