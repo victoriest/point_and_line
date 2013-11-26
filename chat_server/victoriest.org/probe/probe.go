@@ -9,7 +9,7 @@ import (
 	"bytes"
 	log "code.google.com/p/log4go"
 	"encoding/binary"
-	// "encoding/gob"
+	"encoding/gob"
 	"encoding/json"
 )
 
@@ -31,8 +31,6 @@ type Serializable interface {
 	*/
 	Deserialize(src []byte, dst interface{}) (int32, error)
 }
-
-type Codecable interface{}
 
 // Josn的序列化实现
 type JsonProbe struct{}
@@ -82,7 +80,7 @@ func (self JsonProbe) Deserialize(src []byte, dst interface{}) (int32, error) {
 		return -1, err
 	}
 
-	err = json.Unmarshal(msg, &dst)
+	err = json.Unmarshal(msg, dst)
 	if err != nil {
 		log.Error("when Deserialize:", err.Error())
 		return -1, err
@@ -118,50 +116,65 @@ func (self JsonProbe) DeserializeByReader(reader *bufio.Reader) (interface{}, in
 	return dst, msgType, nil
 }
 
-// // Gob的序列化实现
-// type GobProbe struct{}
+// Gob的序列化实现
+type GobProbe struct{}
 
-// // gob的序列化方法实现
-// func (self GobProbe) Serialize(src interface{}) (v []byte, err error) {
-// 	// 序列化
-// 	buf := new(bytes.Buffer)
-// 	enc := gob.NewEncoder(buf)
-// 	err = enc.Encode(src)
-// 	if err != nil {
-// 		log.Error("when GobProbe.Encoding:", err.Error())
-// 		return nil, err
-// 	}
-// 	v = buf.Bytes()
-// 	// 序列化后的byte长度
-// 	var length int32 = int32(len(v))
+// gob的序列化方法实现
+func (self GobProbe) Serialize(src interface{}, msgType int32) ([]byte, error) {
+	// 序列化
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err := enc.Encode(src)
+	if err != nil {
+		log.Error("when GobProbe.Encoding:", err.Error())
+		return nil, err
+	}
+	v := buf.Bytes()
+	// 序列化后的byte长度
+	var length int32 = int32(len(v))
 
-// 	// 将长度信息写入byte数组
-// 	pkg := new(bytes.Buffer)
-// 	err = binary.Write(pkg, binary.LittleEndian, length)
-// 	if err != nil {
-// 		log.Error("when GobProbe.Encoding:", err.Error())
-// 		return nil, err
-// 	}
-// 	err = binary.Write(pkg, binary.LittleEndian, v)
-// 	if err != nil {
-// 		log.Error("when GobProbe.Encoding:", err.Error())
-// 		return nil, err
-// 	}
+	// 将长度信息写入byte数组
+	pkg := new(bytes.Buffer)
+	err = binary.Write(pkg, binary.LittleEndian, length)
+	if err != nil {
+		log.Error("when GobProbe.Encoding:", err.Error())
+		return nil, err
+	}
 
-// 	return pkg.Bytes(), nil
-// }
+	err = binary.Write(pkg, binary.LittleEndian, msgType)
+	if err != nil {
+		log.Error("when Encoding msgType:", err.Error())
+		return nil, err
+	}
 
-// // gob的反序列化方法实现
-// func (self GobProbe) Deserialize(src []byte, dst interface{}) error {
-// 	msg := src[4:]
-// 	buf := bytes.NewBuffer(msg)
-// 	dec := gob.NewDecoder(buf)
-// 	err := dec.Decode(dst)
+	err = binary.Write(pkg, binary.LittleEndian, v)
+	if err != nil {
+		log.Error("when GobProbe.Encoding:", err.Error())
+		return nil, err
+	}
 
-// 	if err != nil {
-// 		log.Error("when GobProbe.Deserialize:", err.Error())
-// 		return err
-// 	}
+	return pkg.Bytes(), nil
+}
 
-// 	return nil
-// }
+// gob的反序列化方法实现
+func (self GobProbe) Deserialize(src []byte, dst interface{}) (int32, error) {
+	var msgType int32
+	data := bytes.NewBuffer(src[4:8])
+	err := binary.Read(data, binary.LittleEndian, &msgType)
+	if err != nil {
+		log.Error("when Deserialize:", err.Error())
+		println("when Deserialize:", err.Error())
+		return -1, err
+	}
+	msg := src[8:]
+	buf := bytes.NewBuffer(msg)
+	dec := gob.NewDecoder(buf)
+	err = dec.Decode(&dst)
+
+	if err != nil {
+		log.Error("when GobProbe.Deserialize:", err.Error())
+		println("when GobProbe.Deserialize:", err.Error())
+		return -1, err
+	}
+	return msgType, nil
+}

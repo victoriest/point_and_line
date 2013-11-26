@@ -1,13 +1,17 @@
 package probe
 
-const SEND_BRO_GLOBAL int32 = 0x100
+const SEND_BRO_GLOBAL string = "BRO_GLOBAL"
 
-const SEND_BRO_GROUP int32 = 0x101
+const SEND_BRO_GROUP string = "BRO_GROUP"
 
-const SEND_TO_SERVER int32 = 0x102
+const SEND_TO_SERVER string = "TO_SERVER"
 
 type VictoriestMsg struct {
-	sendFrom string
-	sendTo string
+	MsgType    int32
 	MsgContext interface{}
+}
+
+type TestMsg struct {
+	MsgInt      int32
+	ChatMessage string
 }

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	// "os/signal"
+	"./victoriest.org/probe"
 	"path"
 	"path/filepath"
 )
@@ -45,7 +46,7 @@ func readServerPort() string {
 	return port
 }
 
-func tcpHandler(server *vserv.VictoriestServer, message interface{}) {
+func tcpHandler(server *vserv.VictoriestServer, message *probe.VictoriestMsg) {
 	log.Debug(message)
-	server.BroadcastMessage(message)
+	server.BroadcastMessage(*message)
 }

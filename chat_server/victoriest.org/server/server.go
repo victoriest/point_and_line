@@ -2,10 +2,11 @@ package server
 
 import (
 	"../probe"
-	"../protocol"
 	"../utils"
 	"bufio"
+	"bytes"
 	log "code.google.com/p/log4go"
+	"encoding/binary"
 	"net"
 )
 
@@ -14,7 +15,7 @@ type IVictoriestServer interface {
 	Shutdown()
 }
 
-type ServerHandler func(*VictoriestServer, interface{})
+type ServerHandler func(*VictoriestServer, *probe.VictoriestMsg)
 
 type VictoriestServer struct {
 	// 服务端端口号
@@ -96,15 +97,18 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 	ipStr := tcpConn.RemoteAddr().String()
 	defer func() {
 		log.Debug("disconnected :" + ipStr)
-		self.BroadcastMessage("disconnected :" + ipStr)
+		testMsg2 := probe.TestMsg{MsgInt: 5, ChatMessage: "disconnected :" + ipStr}
+		broMsg2 := probe.VictoriestMsg{MsgType: probe.MSG_TYPE_TEST_MESSGAE, MsgContext: testMsg2}
+		self.BroadcastMessage(broMsg2)
 		tcpConn.Close()
 		delete(self.connMap, ipStr)
 	}()
-	self.BroadcastMessage("A new connection :" + ipStr)
+	testMsg1 := probe.TestMsg{MsgInt: 5, ChatMessage: "A new connection :" + ipStr}
+	broMsg1 := probe.VictoriestMsg{MsgType: probe.MSG_TYPE_TEST_MESSGAE, MsgContext: testMsg1}
+	self.BroadcastMessage(broMsg1)
 	reader := bufio.NewReader(&tcpConn)
 	for {
-		jsonProbe := new(probe.JsonProbe)
-		message, _, err := jsonProbe.DeserializeByReader(reader)
+		message, _, err := deserializeByReader(reader)
 		if err != nil {
 			return
 		}
@@ -113,11 +117,40 @@ func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
 	}
 }
 
-func (self *VictoriestServer) BroadcastMessage(message interface{}) {
+func (self *VictoriestServer) BroadcastMessage(message probe.VictoriestMsg) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message, protocol.MSG_TYPE_TEST_MESSGAE)
+	buff, _ := jsonProbe.Serialize(message, probe.MSG_TYPE_TEST_MESSGAE)
 	// 向所有人发话
 	for _, conn := range self.connMap {
 		conn.Write(buff)
 	}
+}
+
+func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, error) {
+	jsonProbe := new(probe.JsonProbe)
+	buff, _ := reader.Peek(4)
+	data := bytes.NewBuffer(buff)
+	var length int32
+	err := binary.Read(data, binary.LittleEndian, &length)
+	if err != nil {
+		log.Error("when deserializeByReader:", err.Error())
+		return nil, -1, err
+	}
+
+	if int32(reader.Buffered()) < length+8 {
+		log.Error("int32(reader.Buffered()) < length + 8")
+		return nil, -1, err
+	}
+
+	pack := make([]byte, int(8+length))
+	_, err = reader.Read(pack)
+	if err != nil {
+		log.Error("when deserializeByReader:", err.Error())
+		return nil, -1, err
+	}
+	var dst probe.VictoriestMsg
+	var msgType int32
+	msgType, err = jsonProbe.Deserialize(pack, &dst)
+
+	return &dst, msgType, nil
 }
