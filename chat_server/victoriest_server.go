@@ -2,39 +2,24 @@ package main
 
 import (
 	"./goconfig"
-	vserv "./victoriest.org/server"
+	"./victoriest.org/probe"
+	estServer "./victoriest.org/server"
 	"./victoriest.org/utils"
 	log "code.google.com/p/log4go"
+	"net"
 	"os"
 	"os/exec"
-	// "os/signal"
-	"./victoriest.org/probe"
 	"path"
 	"path/filepath"
 )
 
-// 退出信号量
-// var quitSp chan bool
-
 func main() {
 	log.LoadConfiguration("./log4go.config")
-
-	// // 监测退出程序的信号量
-	// sign := make(chan os.Signal, 1)
-
-	server := vserv.NewVictoriestServer(readServerPort())
-	server.Handler = tcpHandler
+	server := estServer.NewVictoriestServer(readServerPort(), tcpHandler, connectedHandler, disconnectingHander)
 	server.Startup()
-
-	// signal.Notify(sign, os.Interrupt, os.Kill)
-	// <-sign
-	// log.Info("quit")
-	// server.Shutdown()
 }
 
-/**
- * 读取配置文件
- */
+// 读取配置文件
 func readServerPort() string {
 	exefile, _ := exec.LookPath(os.Args[0])
 	log.Info(filepath.Dir(exefile))
@@ -46,7 +31,20 @@ func readServerPort() string {
 	return port
 }
 
-func tcpHandler(server *vserv.VictoriestServer, message *probe.VictoriestMsg) {
+// 处理消息具体实现
+func tcpHandler(server *estServer.VictoriestServer, message *probe.VictoriestMsg) {
 	log.Debug(message)
 	server.BroadcastMessage(*message)
+}
+
+func connectedHandler(server *estServer.VictoriestServer, conn *net.TCPConn) {
+	ipStr := conn.RemoteAddr().String()
+	broMsg := probe.VictoriestMsg{MsgType: 0x100, MsgContext: "disconnected :" + ipStr}
+	server.BroadcastMessage(broMsg)
+}
+
+func disconnectingHander(server *estServer.VictoriestServer, conn *net.TCPConn) {
+	ipStr := conn.RemoteAddr().String()
+	broMsg := probe.VictoriestMsg{MsgType: 0x100, MsgContext: "A new connection :" + ipStr}
+	server.BroadcastMessage(broMsg)
 }

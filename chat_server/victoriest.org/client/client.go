@@ -12,6 +12,10 @@ import (
 	"strings"
 )
 
+// 消息逻辑处理托管Handler
+type MessageReceivedHandler func(*VictoriestClient, *probe.VictoriestMsg)
+type MessageSenderHandler func(*VictoriestClient, *bufio.Writer, string)
+
 type IVictoriestClient interface {
 	Startup()
 }
@@ -23,13 +27,19 @@ type VictoriestClient struct {
 	ip string
 	// 退出信号量
 	quitSp chan bool
+	// 消息逻辑处理托管Handler
+	recivedHandler MessageReceivedHandler
+	// 消息逻辑处理托管Handler
+	sendHandler MessageSenderHandler
 }
 
-func NewVictoriestClient(ip string, port string) *VictoriestClient {
+func NewVictoriestClient(ip string, port string, recivedLogic MessageReceivedHandler, sendLogic MessageSenderHandler) *VictoriestClient {
 	client := new(VictoriestClient)
 	client.ip = ip
 	client.port = port
 	client.quitSp = make(chan bool)
+	client.recivedHandler = recivedLogic
+	client.sendHandler = sendLogic
 	return client
 }
 
@@ -50,7 +60,6 @@ func (self *VictoriestClient) Startup() {
 }
 
 func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
-	jsonProbe := new(probe.JsonProbe)
 	writer := bufio.NewWriter(conn)
 	for {
 		var msg string
@@ -60,12 +69,7 @@ func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
 			self.quitSp <- true
 			break
 		}
-		testMsg := probe.TestMsg{MsgInt: 5, ChatMessage: msg}
-		broMsg := probe.VictoriestMsg{MsgType: probe.MSG_TYPE_TEST_MESSGAE, MsgContext: testMsg}
-
-		strBuf, _ := jsonProbe.Serialize(broMsg, probe.MSG_TYPE_TEST_MESSGAE)
-		writer.Write(strBuf)
-		writer.Flush()
+		self.sendHandler(self, writer, msg)
 	}
 }
 
@@ -73,15 +77,8 @@ func (self *VictoriestClient) readerPipe(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	for {
 		message, _, err := deserializeByReader(reader)
-		log.Debug(message)
-		// switch obj := (interface{}(message)).(type) {
-		// case probe.VictoriestMsg:
-		// 	log.Debug(obj.MsgContext)
-		// default:
-		// 	log.Debug("not a VictoriestMsg  ", message, "  ", msgType)
-		// }
-		// log.Debug((probe.VictoriestMsg(message)).MsgContext)
 		utils.CheckError(err, true)
+		self.recivedHandler(self, message)
 	}
 }
 

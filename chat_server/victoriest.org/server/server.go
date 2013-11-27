@@ -10,12 +10,17 @@ import (
 	"net"
 )
 
+// 服务器接口
 type IVictoriestServer interface {
 	Startup()
 	Shutdown()
 }
 
-type ServerHandler func(*VictoriestServer, *probe.VictoriestMsg)
+// 消息逻辑处理托管Handler
+type MessageReceivedHandler func(*VictoriestServer, *probe.VictoriestMsg)
+
+// 连接状态处理托管Handler
+type ConnectionHandler func(*VictoriestServer, *net.TCPConn)
 
 type VictoriestServer struct {
 	// 服务端端口号
@@ -24,17 +29,27 @@ type VictoriestServer struct {
 	quitSp chan bool
 	// 客户端连接Map
 	connMap map[string]*net.TCPConn
-	//
-	Handler ServerHandler
+	// 消息逻辑处理托管Handler
+	recivedHandler MessageReceivedHandler
+	// 新连接处理Handler
+	connectedHandler ConnectionHandler
+	// 断开连接处理Handler
+	disconnectingHandler ConnectionHandler
 }
 
-func NewVictoriestServer(port string) *VictoriestServer {
+// Server的构造器
+func NewVictoriestServer(port string, handler MessageReceivedHandler, connHander ConnectionHandler, disconnHander ConnectionHandler) *VictoriestServer {
 	server := new(VictoriestServer)
 	server.port = port
 	// tcpConn的map
 	server.connMap = make(map[string]*net.TCPConn)
 	// 退出信号channel
 	server.quitSp = make(chan bool)
+
+	server.recivedHandler = handler
+	server.connectedHandler = connHander
+	server.disconnectingHandler = disconnHander
+
 	return server
 }
 
@@ -54,7 +69,7 @@ func (self *VictoriestServer) initConnectionManager(tcpListener *net.TCPListener
 		i++
 
 		log.Debug("A client connected : ", tcpConn.RemoteAddr().String())
-		go self.tcpHandler(*tcpConn)
+		go self.tcpPipe(tcpConn)
 	}
 }
 
@@ -93,37 +108,48 @@ func (self *VictoriestServer) Shutdown() {
 /**
  * 一客户端一线程
  */
-func (self *VictoriestServer) tcpHandler(tcpConn net.TCPConn) {
+func (self *VictoriestServer) tcpPipe(tcpConn *net.TCPConn) {
 	ipStr := tcpConn.RemoteAddr().String()
 	defer func() {
 		log.Debug("disconnected :" + ipStr)
-		testMsg2 := probe.TestMsg{MsgInt: 5, ChatMessage: "disconnected :" + ipStr}
-		broMsg2 := probe.VictoriestMsg{MsgType: probe.MSG_TYPE_TEST_MESSGAE, MsgContext: testMsg2}
-		self.BroadcastMessage(broMsg2)
+		self.disconnectingHandler(self, tcpConn)
+
 		tcpConn.Close()
 		delete(self.connMap, ipStr)
 	}()
-	testMsg1 := probe.TestMsg{MsgInt: 5, ChatMessage: "A new connection :" + ipStr}
-	broMsg1 := probe.VictoriestMsg{MsgType: probe.MSG_TYPE_TEST_MESSGAE, MsgContext: testMsg1}
-	self.BroadcastMessage(broMsg1)
-	reader := bufio.NewReader(&tcpConn)
+	log.Debug("disconnected :" + ipStr)
+	self.connectedHandler(self, tcpConn)
+
+	reader := bufio.NewReader(tcpConn)
 	for {
 		message, _, err := deserializeByReader(reader)
 		if err != nil {
 			return
 		}
 		// use pack do what you want ...
-		self.Handler(self, message)
+		self.recivedHandler(self, message)
 	}
 }
 
+/**
+ * 全局广播
+ */
 func (self *VictoriestServer) BroadcastMessage(message probe.VictoriestMsg) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message, probe.MSG_TYPE_TEST_MESSGAE)
+	buff, _ := jsonProbe.Serialize(message, 0x100)
 	// 向所有人发话
 	for _, conn := range self.connMap {
 		conn.Write(buff)
 	}
+}
+
+/**
+ * 向某人发消息
+ */
+func (self *VictoriestServer) SendTo(sendTo string, message probe.VictoriestMsg) {
+	jsonProbe := new(probe.JsonProbe)
+	buff, _ := jsonProbe.Serialize(message, 0x100)
+	self.connMap[sendTo].Write(buff)
 }
 
 func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, error) {
