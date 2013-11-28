@@ -14,7 +14,7 @@ import (
 
 // 消息逻辑处理托管Handler
 type MessageReceivedHandler func(*VictoriestClient, *probe.VictoriestMsg)
-type MessageSenderHandler func(*VictoriestClient, *bufio.Writer, string)
+type MessageSenderHandler func(*VictoriestClient, *net.TCPConn, string)
 
 type IVictoriestClient interface {
 	Startup()
@@ -60,7 +60,6 @@ func (self *VictoriestClient) Startup() {
 }
 
 func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
-	writer := bufio.NewWriter(conn)
 	for {
 		var msg string
 		fmt.Scanln(&msg)
@@ -69,7 +68,7 @@ func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
 			self.quitSp <- true
 			break
 		}
-		self.sendHandler(self, writer, msg)
+		self.sendHandler(self, conn, msg)
 	}
 }
 
@@ -93,12 +92,12 @@ func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, err
 		return nil, -1, err
 	}
 
-	if int32(reader.Buffered()) < length+8 {
-		log.Error("int32(reader.Buffered()) < length + 8")
+	if int32(reader.Buffered()) < length+4 {
+		log.Error("int32(reader.Buffered()) < length + 4")
 		return nil, -1, err
 	}
 
-	pack := make([]byte, int(8+length))
+	pack := make([]byte, int(4+length))
 	_, err = reader.Read(pack)
 	if err != nil {
 		log.Error("when deserializeByReader:", err.Error())
@@ -107,6 +106,5 @@ func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, err
 	var dst probe.VictoriestMsg
 	var msgType int32
 	msgType, err = jsonProbe.Deserialize(pack, &dst)
-
 	return &dst, msgType, nil
 }

@@ -24,13 +24,13 @@ type ISerializable interface {
 	 * return : []byte - 序列化后的byte数组
 	 *          error  - 错误信息, 如果成功则为nil
 	 */
-	Serialize(src interface{}, msgType int32) ([]byte, error)
+	Serialize(src *VictoriestMsg) ([]byte, error)
 
 	/**
-	 * param  : src         - 序列化过的对象
-	 *          interface{} - 反序列化后的对象
-	 * return : error       - 错误信息, 如果成功则为nil
-	 *          msgType     - 反序列化后的对象标识
+	 * param  : src            - 序列化过的对象
+	 *          dst            - 反序列化后的对象
+	 * return : error          - 错误信息, 如果成功则为nil
+	 *          msgType        - 反序列化后的对象标识
 	 */
-	Deserialize(src []byte, dst interface{}) (int32, error)
+	Deserialize(src []byte, dst *VictoriestMsg) (int32, error)
 }

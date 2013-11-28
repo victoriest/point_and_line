@@ -11,21 +11,21 @@ type TestMsg struct {
 }
 
 func genVictoriestMsg() *VictoriestMsg {
-	msgObj := &VictoriestMsg{MsgContext: TestMsg{MsgInt: 55, ChatMessage: "hello world"}}
+	msgObj := &VictoriestMsg{MsgContext: TestMsg{MsgInt: 55, ChatMessage: "hello world"}, MsgType: 10}
 	return msgObj
 }
 
 func testUtil(probe ISerializable, t *testing.T) {
 	msgObj := genVictoriestMsg()
 	// 序列化
-	bt, err := probe.Serialize(msgObj, 0xA)
+	bt, err := probe.Serialize(msgObj)
 	if err != nil {
 		t.Error("error on probe.Serialize")
 	}
 	t.Log("success on probe.Serialize")
 
 	// 反序列化
-	var dest interface{}
+	var dest VictoriestMsg
 	var mst int32
 	mst, err = probe.Deserialize(bt, &dest)
 

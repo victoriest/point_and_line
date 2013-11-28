@@ -121,7 +121,14 @@ func (self *VictoriestServer) tcpPipe(tcpConn *net.TCPConn) {
 	self.connectedHandler(self, tcpConn)
 
 	reader := bufio.NewReader(tcpConn)
+
 	for {
+		// var b []byte
+		// tcpConn.Read(b)
+		// jsonProbe := new(probe.JsonProbe)
+		// var dst probe.VictoriestMsg
+		// _, err := jsonProbe.Deserialize(b, &dst)
+		// log.Debug(dst)
 		message, _, err := deserializeByReader(reader)
 		if err != nil {
 			return
@@ -134,9 +141,9 @@ func (self *VictoriestServer) tcpPipe(tcpConn *net.TCPConn) {
 /**
  * 全局广播
  */
-func (self *VictoriestServer) BroadcastMessage(message probe.VictoriestMsg) {
+func (self *VictoriestServer) BroadcastMessage(message *probe.VictoriestMsg) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message, 0x100)
+	buff, _ := jsonProbe.Serialize(message)
 	// 向所有人发话
 	for _, conn := range self.connMap {
 		conn.Write(buff)
@@ -146,29 +153,29 @@ func (self *VictoriestServer) BroadcastMessage(message probe.VictoriestMsg) {
 /**
  * 向某人发消息
  */
-func (self *VictoriestServer) SendTo(sendTo string, message probe.VictoriestMsg) {
+func (self *VictoriestServer) SendTo(sendTo string, message *probe.VictoriestMsg) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message, 0x100)
+	buff, _ := jsonProbe.Serialize(message)
 	self.connMap[sendTo].Write(buff)
 }
 
 func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, error) {
 	jsonProbe := new(probe.JsonProbe)
-	buff, _ := reader.Peek(4)
-	data := bytes.NewBuffer(buff)
+	lengthByte, _ := reader.Peek(4)
+	lengthBuff := bytes.NewBuffer(lengthByte)
 	var length int32
-	err := binary.Read(data, binary.LittleEndian, &length)
+	err := binary.Read(lengthBuff, binary.LittleEndian, &length)
 	if err != nil {
 		log.Error("when deserializeByReader:", err.Error())
 		return nil, -1, err
 	}
 
-	if int32(reader.Buffered()) < length+8 {
-		log.Error("int32(reader.Buffered()) < length + 8")
+	if int32(reader.Buffered()) < length+4 {
+		log.Error("int32(reader.Buffered()) < length + 4")
 		return nil, -1, err
 	}
 
-	pack := make([]byte, int(8+length))
+	pack := make([]byte, int(4+length))
 	_, err = reader.Read(pack)
 	if err != nil {
 		log.Error("when deserializeByReader:", err.Error())
@@ -177,6 +184,6 @@ func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, err
 	var dst probe.VictoriestMsg
 	var msgType int32
 	msgType, err = jsonProbe.Deserialize(pack, &dst)
-
+	log.Debug(length, msgType, dst)
 	return &dst, msgType, nil
 }
