@@ -117,7 +117,6 @@ func (self *VictoriestServer) tcpPipe(tcpConn *net.TCPConn) {
 		tcpConn.Close()
 		delete(self.connMap, ipStr)
 	}()
-	log.Debug("disconnected :" + ipStr)
 	self.connectedHandler(self, tcpConn)
 
 	reader := bufio.NewReader(tcpConn)
