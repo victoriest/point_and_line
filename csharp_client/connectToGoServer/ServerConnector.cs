@@ -83,6 +83,27 @@ namespace connectToGoServer
             }
         }
 
+        public void SendMessage(byte[] data)
+        {
+            if (socket == null) return;
+            socket.BeginSend(data, 0, data.Length, SocketFlags.None, SendCallBack, socket);
+        }
+
+        private void SendCallBack(IAsyncResult result)
+        {
+            try
+            {
+                Socket sock = result.AsyncState as Socket;
+                if (sock != null)
+                {
+                    sock.EndSend(result);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         // 关闭连接
         public void CloseConnect()
         {

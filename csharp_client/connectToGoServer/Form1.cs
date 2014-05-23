@@ -33,7 +33,14 @@ namespace connectToGoServer
         private void RecivedMessage(byte[] data)
         {
             //MessageBox.Show(BitConverter.ToString(data));
-            lbInfo.Items.Add(BitConverter.ToString(data));
+            var tmp = new byte[data.Length - 4];
+            var lengthByte = new byte[4];
+            Array.Copy(data, 0, lengthByte, 0, 4);
+            Array.Copy(data, 4, tmp, 0, tmp.Length);
+            int length = BitConverter.ToInt32(lengthByte, 0);
+            lbInfo.Items.Add(length.ToString());
+            var csData = Encoding.UTF8.GetString(tmp, 0, tmp.Length);
+            lbInfo.Items.Add(csData);
         }
 
         private void DisconnectedCallBack() {
@@ -49,6 +56,18 @@ namespace connectToGoServer
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             connector.CloseConnect();
+        }
+
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes("{\"MsgType\":10,\"MsgContext\":{\"ChatMessage\":\""+txtMsg.Text+"\"}}");
+            int length = bytes.Length;
+            byte[] data = new byte[length + 4];
+            byte[] lengthBytes = BitConverter.GetBytes(length);
+            Array.Copy(lengthBytes, data, 4);
+            Array.Copy(bytes, 0, data, 4, length);
+
+            connector.SendMessage(data);
         }
     }
 }

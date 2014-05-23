@@ -35,6 +35,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnDisconnect = new System.Windows.Forms.Button();
             this.lbInfo = new System.Windows.Forms.ListBox();
+            this.txtMsg = new System.Windows.Forms.TextBox();
+            this.btnSend = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnConnect
@@ -95,16 +97,36 @@
             // 
             this.lbInfo.FormattingEnabled = true;
             this.lbInfo.ItemHeight = 12;
-            this.lbInfo.Location = new System.Drawing.Point(14, 42);
+            this.lbInfo.Location = new System.Drawing.Point(14, 66);
             this.lbInfo.Name = "lbInfo";
-            this.lbInfo.Size = new System.Drawing.Size(450, 220);
+            this.lbInfo.Size = new System.Drawing.Size(450, 196);
             this.lbInfo.TabIndex = 6;
+            // 
+            // txtMsg
+            // 
+            this.txtMsg.Location = new System.Drawing.Point(14, 39);
+            this.txtMsg.Name = "txtMsg";
+            this.txtMsg.Size = new System.Drawing.Size(369, 21);
+            this.txtMsg.TabIndex = 7;
+            this.txtMsg.Text = "hello wrold";
+            // 
+            // btnSend
+            // 
+            this.btnSend.Location = new System.Drawing.Point(389, 37);
+            this.btnSend.Name = "btnSend";
+            this.btnSend.Size = new System.Drawing.Size(75, 23);
+            this.btnSend.TabIndex = 8;
+            this.btnSend.Text = "send";
+            this.btnSend.UseVisualStyleBackColor = true;
+            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(476, 275);
+            this.Controls.Add(this.btnSend);
+            this.Controls.Add(this.txtMsg);
             this.Controls.Add(this.lbInfo);
             this.Controls.Add(this.btnDisconnect);
             this.Controls.Add(this.label2);
@@ -128,6 +150,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.ListBox lbInfo;
+        private System.Windows.Forms.TextBox txtMsg;
+        private System.Windows.Forms.Button btnSend;
     }
 }
 
