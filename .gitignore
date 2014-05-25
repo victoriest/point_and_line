@@ -1,1 +1,5 @@
 *.exe
+csharp_client/connectToGoServer/bin/Debug/connectToGoServer.exe.config
+csharp_client/connectToGoServer/bin/Debug/connectToGoServer.vshost.exe.config
+csharp_client/connectToGoServer/bin/Debug/connectToGoServer.vshost.exe.manifest
+csharp_client/connectToGoServer/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
