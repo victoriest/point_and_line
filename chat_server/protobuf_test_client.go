@@ -2,7 +2,10 @@ package main
 
 import (
 	pb "./protobuf"
+	"bufio"
+	"bytes"
 	proto "code.google.com/p/goprotobuf/proto"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"strings"
@@ -21,8 +24,8 @@ func main() {
 
 	fmt.Println("connecting ", conn.RemoteAddr().String(), "...")
 
+	go readerPipe(conn)
 	go writerPipe(conn)
-	// go readerPipe(conn)
 
 	<-quitSp
 }
@@ -36,7 +39,6 @@ func writerPipe(conn *net.TCPConn) {
 			quitSp <- true
 			break
 		}
-
 		testMessage := &pb.TestMessage{
 			TestInt:    proto.Int32(123),
 			TestString: proto.String("est"),
@@ -59,11 +61,40 @@ func writerPipe(conn *net.TCPConn) {
 	}
 }
 
-// func readerPipe(conn *net.TCPConn) {
-// 	reader := bufio.NewReader(conn)
-// 	for {
-// 		message, _, err := deserializeByReader(reader)
-// 		utils.CheckError(err, true)
-// 		self.recivedHandler(self, message)
-// 	}
-// }
+func readerPipe(conn *net.TCPConn) {
+	reader := bufio.NewReader(conn)
+	for {
+		message, _ := deserializeByReader(reader)
+		fmt.Println(message)
+	}
+}
+
+func deserializeByReader(reader *bufio.Reader) (*pb.MobileSuiteProtobuf, error) {
+	buff, _ := reader.Peek(4)
+	data := bytes.NewBuffer(buff)
+	var length int32
+	err := binary.Read(data, binary.BigEndian, &length)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(length)
+	if int32(reader.Buffered()) < length+4 {
+		return nil, err
+	}
+
+	pack := make([]byte, int(4+length))
+	_, err = reader.Read(pack)
+	if err != nil {
+		return nil, err
+	}
+	msg := pack[4:]
+	var dst pb.MobileSuiteProtobuf
+	proto.Unmarshal(msg, &dst)
+	fmt.Println(&dst)
+
+	var testMsg pb.TestMessage
+	proto.Unmarshal(dst.Message, &testMsg)
+	fmt.Println(&testMsg)
+
+	return &dst, nil
+}
