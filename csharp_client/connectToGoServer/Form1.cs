@@ -22,7 +22,6 @@ namespace connectToGoServer
             connector.OnRecivedMessageEvent += RecivedMessage;
             connector.OnDisconnectedEvent += DisconnectedCallBack;
             Control.CheckForIllegalCrossThreadCalls = false;
-            
         }
 
         private void ConnectedCallBack(IAsyncResult ar){

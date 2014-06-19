@@ -1,0 +1,9 @@
+D:\workspace_go\go-server\csharp_client\connectToGoServer\bin\Debug\connectToGoServer.exe.config
+D:\workspace_go\go-server\csharp_client\connectToGoServer\bin\Debug\connectToGoServer.exe
+D:\workspace_go\go-server\csharp_client\connectToGoServer\bin\Debug\connectToGoServer.pdb
+D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.csprojResolveAssemblyReference.cache
+D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.Form1.resources
+D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.Properties.Resources.resources
+D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.csproj.GenerateResource.Cache
+D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.exe
+D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.pdb

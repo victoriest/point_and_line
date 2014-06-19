@@ -1,7 +1,7 @@
 package main
 
 import (
-	pb "./protobuf"
+	pb "./victoriest.org/protobuf"
 	"bufio"
 	"bytes"
 	proto "code.google.com/p/goprotobuf/proto"
