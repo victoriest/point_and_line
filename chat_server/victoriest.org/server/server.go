@@ -35,6 +35,8 @@ type VictoriestServer struct {
 	connectedHandler ConnectionHandler
 	// 断开连接处理Handler
 	disconnectingHandler ConnectionHandler
+	// 序列化接口
+	serverProbe probe.ISerializable
 }
 
 // Server的构造器
@@ -50,6 +52,7 @@ func NewVictoriestServer(port string, handler MessageReceivedHandler, connHander
 	server.connectedHandler = connHander
 	server.disconnectingHandler = disconnHander
 
+	server.serverProbe = new(probe.JsonProbe)
 	return server
 }
 
@@ -128,7 +131,7 @@ func (self *VictoriestServer) tcpPipe(tcpConn *net.TCPConn) {
 		// var dst probe.VictoriestMsg
 		// _, err := jsonProbe.Deserialize(b, &dst)
 		// log.Debug(dst)
-		message, _, err := deserializeByReader(reader)
+		message, _, err := deserializeByReader(reader, self)
 		if err != nil {
 			return
 		}
@@ -141,8 +144,7 @@ func (self *VictoriestServer) tcpPipe(tcpConn *net.TCPConn) {
  * 全局广播
  */
 func (self *VictoriestServer) BroadcastMessage(message *probe.VictoriestMsg) {
-	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message)
+	buff, _ := self.serverProbe.Serialize(message)
 	// 向所有人发话
 	for _, conn := range self.connMap {
 		conn.Write(buff)
@@ -153,13 +155,12 @@ func (self *VictoriestServer) BroadcastMessage(message *probe.VictoriestMsg) {
  * 向某人发消息
  */
 func (self *VictoriestServer) SendTo(sendTo string, message *probe.VictoriestMsg) {
-	jsonProbe := new(probe.JsonProbe)
-	buff, _ := jsonProbe.Serialize(message)
+	buff, _ := self.serverProbe.Serialize(message)
 	self.connMap[sendTo].Write(buff)
 }
 
-func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, error) {
-	jsonProbe := new(probe.JsonProbe)
+func deserializeByReader(reader *bufio.Reader, server *VictoriestServer) (*probe.VictoriestMsg, int32, error) {
+	// jsonProbe := new(probe.JsonProbe)
 	lengthByte, _ := reader.Peek(4)
 	lengthBuff := bytes.NewBuffer(lengthByte)
 	var length int32
@@ -182,7 +183,7 @@ func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, err
 	}
 	var dst probe.VictoriestMsg
 	var msgType int32
-	msgType, err = jsonProbe.Deserialize(pack, &dst)
+	msgType, err = server.serverProbe.Deserialize(pack, &dst)
 	log.Debug(length, msgType, dst)
 	return &dst, msgType, nil
 }

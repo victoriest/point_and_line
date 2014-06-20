@@ -1,15 +1,11 @@
-package probe
+package codec
 
 import (
-	pb "./victoriest.org/protobuf"
 	"bufio"
 	"bytes"
 	proto "code.google.com/p/goprotobuf/proto"
 	log "code.google.com/p/log4go"
 	"encoding/binary"
-	"fmt"
-	"net"
-	"strings"
 )
 
 type ProtobufProbe struct{}
@@ -20,9 +16,10 @@ type ProtobufProbe struct{}
  * return : []byte - 序列化后的byte数组
  *          error  - 错误信息, 如果成功则为nil
  */
-func (self ProtobufProbe) Serialize(src *VictoriestMsg) ([]byte, error) {
-	var v []bytes
+func (self ProtobufProbe) Serialize(src *pb.MobileSuiteProtobuf) ([]byte, error) {
+	var v []byte
 	var err error
+
 	v, err = proto.Marshal(src)
 	if err != nil {
 		log.Error("when encoding:", err.Error())
@@ -31,6 +28,7 @@ func (self ProtobufProbe) Serialize(src *VictoriestMsg) ([]byte, error) {
 
 	var length int32 = int32(len(v))
 	pkg := new(bytes.Buffer)
+
 	err = binary.Write(pkg, binary.LittleEndian, length)
 	if err != nil {
 		log.Error("when write length:", err.Error())
@@ -53,7 +51,7 @@ func (self ProtobufProbe) Serialize(src *VictoriestMsg) ([]byte, error) {
  * return : error          - 错误信息, 如果成功则为nil
  *          msgType        - 反序列化后的对象标识
  */
-func (self ProtobufProbe) Deserialize(src []byte, dst *VictoriestMsg) (int32, error) {
+func (self ProtobufProbe) Deserialize(src []byte, dst *pb.MobileSuiteProtobuf) (int32, error) {
 	// msg 序列化后的对象
 	msg := src[4:]
 
@@ -63,5 +61,33 @@ func (self ProtobufProbe) Deserialize(src []byte, dst *VictoriestMsg) (int32, er
 		return -1, err
 	}
 
-	return dst.MsgType, nil
+	return *dst.Type, nil
+}
+
+func (self ProtobufProbe) deserializeByReader(reader *bufio.Reader) (*pb.MobileSuiteProtobuf, int32, error) {
+	lengthByte, _ := reader.Peek(4)
+	lengthBuff := bytes.NewBuffer(lengthByte)
+	var length int32
+	err := binary.Read(lengthBuff, binary.LittleEndian, &length)
+	if err != nil {
+		log.Error("when deserializeByReader:", err.Error())
+		return nil, -1, err
+	}
+
+	if int32(reader.Buffered()) < length+4 {
+		log.Error("int32(reader.Buffered()) < length + 4")
+		return nil, -1, err
+	}
+
+	pack := make([]byte, int(4+length))
+	_, err = reader.Read(pack)
+	if err != nil {
+		log.Error("when deserializeByReader:", err.Error())
+		return nil, -1, err
+	}
+	var dst pb.MobileSuiteProtobuf
+	var msgType int32
+	msgType, err = self.Deserialize(pack, &dst)
+	log.Debug(length, msgType, dst)
+	return &dst, msgType, nil
 }

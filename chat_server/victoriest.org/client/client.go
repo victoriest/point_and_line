@@ -31,6 +31,8 @@ type VictoriestClient struct {
 	recivedHandler MessageReceivedHandler
 	// 消息逻辑处理托管Handler
 	sendHandler MessageSenderHandler
+	// 序列化实现
+	clientProbe probe.ISerializable
 }
 
 func NewVictoriestClient(ip string, port string, recivedLogic MessageReceivedHandler, sendLogic MessageSenderHandler) *VictoriestClient {
@@ -40,6 +42,7 @@ func NewVictoriestClient(ip string, port string, recivedLogic MessageReceivedHan
 	client.quitSp = make(chan bool)
 	client.recivedHandler = recivedLogic
 	client.sendHandler = sendLogic
+	client.clientProbe = new(probe.JsonProbe)
 	return client
 }
 
@@ -75,14 +78,14 @@ func (self *VictoriestClient) writerPipe(conn *net.TCPConn) {
 func (self *VictoriestClient) readerPipe(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	for {
-		message, _, err := deserializeByReader(reader)
+		message, _, err := deserializeByReader(reader, self)
 		utils.CheckError(err, true)
 		self.recivedHandler(self, message)
 	}
 }
 
-func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, error) {
-	jsonProbe := new(probe.JsonProbe)
+func deserializeByReader(reader *bufio.Reader, client *VictoriestClient) (*probe.VictoriestMsg, int32, error) {
+	// jsonProbe := new(probe.JsonProbe)
 	buff, _ := reader.Peek(4)
 	data := bytes.NewBuffer(buff)
 	var length int32
@@ -105,6 +108,6 @@ func deserializeByReader(reader *bufio.Reader) (*probe.VictoriestMsg, int32, err
 	}
 	var dst probe.VictoriestMsg
 	var msgType int32
-	msgType, err = jsonProbe.Deserialize(pack, &dst)
+	msgType, err = client.clientProbe.Deserialize(pack, &dst)
 	return &dst, msgType, nil
 }
