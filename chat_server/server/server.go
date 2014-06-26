@@ -1,9 +1,11 @@
 package server
 
 import (
-	"./codec"
-	"./protocol"
-	"./utils"
+	"../codec"
+	"../protocol"
+	"../utils"
+	"bufio"
+	log "code.google.com/p/log4go"
 	"net"
 )
 
@@ -14,14 +16,14 @@ type INexus interface {
 	// 关闭服务器
 	Shutdown()
 	// 重启服务器
-	Restart()
+	// Restart()
 }
 
 // 消息处理托管
-type MessageRecivedHandler func(*INexus, *protocol.MobileSuiteModel)
+type MessageRecivedHandler func(*Nexus, *protocol.MobileSuiteModel)
 
 // 连接状态处理托管
-type ConnectionHandler func(*INexus, *net.TCPConn)
+type ConnectionHandler func(*Nexus, *net.TCPConn)
 
 type Nexus struct {
 	port                 string                  // 服务端端口号
@@ -41,7 +43,7 @@ func NewNexus(port string, handler MessageRecivedHandler, connHander ConnectionH
 	nexus.recivedHandler = handler
 	nexus.newConnectionHandler = connHander
 	nexus.disconnectHandler = disconnHander
-	nexus.probe = new(codec.ProtobufProbe)
+	nexus.probe = *new(codec.ProtobufProbe)
 	return nexus
 }
 
@@ -100,17 +102,17 @@ func (self *Nexus) tcpPipe(tcpConn *net.TCPConn) {
 	ipStr := tcpConn.RemoteAddr().String()
 	defer func() {
 		log.Debug("disconnected :" + ipStr)
-		self.disconnectingHandler(self, tcpConn)
+		self.disconnectHandler(self, tcpConn)
 
 		tcpConn.Close()
 		delete(self.connMap, ipStr)
 	}()
-	self.connectedHandler(self, tcpConn)
+	self.newConnectionHandler(self, tcpConn)
 
 	reader := bufio.NewReader(tcpConn)
 
 	for {
-		message, _, err := self.probe.deserializeByReader(reader, self)
+		message, _, err := self.probe.DeserializeByReader(reader)
 		if err != nil {
 			return
 		}
@@ -127,4 +129,12 @@ func (self *Nexus) BroadcastMessage(message *protocol.MobileSuiteModel) {
 	for _, conn := range self.connMap {
 		conn.Write(buff)
 	}
+}
+
+/**
+ * 向某人发消息
+ */
+func (self *Nexus) SendTo(sendTo string, message *protocol.MobileSuiteModel) {
+	buff, _ := self.probe.Serialize(message)
+	self.connMap[sendTo].Write(buff)
 }

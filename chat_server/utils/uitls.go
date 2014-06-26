@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"./goconfig"
+	"../goconfig"
 	log "code.google.com/p/log4go"
 	"os"
 )

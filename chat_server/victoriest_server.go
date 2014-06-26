@@ -3,9 +3,9 @@ package main
 import (
 	"./goconfig"
 	"./protocol"
-	"./victoriest.org/probe"
-	estServer "./victoriest.org/server"
-	"./victoriest.org/utils"
+	sev "./server"
+	"./utils"
+	proto "code.google.com/p/goprotobuf/proto"
 	log "code.google.com/p/log4go"
 	"net"
 	"os"
@@ -16,7 +16,7 @@ import (
 
 func main() {
 	log.LoadConfiguration("./log4go.config")
-	server := estServer.NewVictoriestServer(readServerPort(), tcpHandler, connectedHandler, disconnectingHander)
+	server := sev.NewNexus(readServerPort(), tcpHandler, connectedHandler, disconnectingHander)
 	server.Startup()
 }
 
@@ -33,22 +33,31 @@ func readServerPort() string {
 }
 
 // 处理消息具体实现
-func tcpHandler(server *estServer.VictoriestServer, message *probe.VictoriestMsg) {
+func tcpHandler(server *sev.Nexus, message *protocol.MobileSuiteModel) {
 	log.Debug(message)
 	server.BroadcastMessage(message)
 }
 
-func connectedHandler(server *estServer.VictoriestServer, conn *net.TCPConn) {
+func connectedHandler(server *sev.Nexus, conn *net.TCPConn) {
 	ipStr := conn.RemoteAddr().String()
-	chatMsg := protocol.ChatMsg{ChatMessage: "A new connection :" + ipStr}
-	broMsg := &probe.VictoriestMsg{MsgType: protocol.MSG_TYPE_CHAT_MESSGAE, MsgContext: chatMsg}
-
+	str := "A new connection :" + ipStr
+	chatMsg := &protocol.ChatMsg{ChatContext: &str}
+	byt, _ := proto.Marshal(chatMsg)
+	broMsg := &protocol.MobileSuiteModel{
+		Type:    proto.Int32(protocol.MSG_TYPE_CHAT_MESSGAE),
+		Message: byt,
+	}
 	server.BroadcastMessage(broMsg)
 }
 
-func disconnectingHander(server *estServer.VictoriestServer, conn *net.TCPConn) {
+func disconnectingHander(server *sev.Nexus, conn *net.TCPConn) {
 	ipStr := conn.RemoteAddr().String()
-	chatMsg := protocol.ChatMsg{ChatMessage: "disconnected :" + ipStr}
-	broMsg := &probe.VictoriestMsg{MsgType: protocol.MSG_TYPE_CHAT_MESSGAE, MsgContext: chatMsg}
+	str := "disconnected :" + ipStr
+	chatMsg := &protocol.ChatMsg{ChatContext: &str}
+	byt, _ := proto.Marshal(chatMsg)
+	broMsg := &protocol.MobileSuiteModel{
+		Type:    proto.Int32(protocol.MSG_TYPE_CHAT_MESSGAE),
+		Message: byt,
+	}
 	server.BroadcastMessage(broMsg)
 }

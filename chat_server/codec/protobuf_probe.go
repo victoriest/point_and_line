@@ -1,6 +1,7 @@
 package codec
 
 import (
+	"../protocol"
 	"bufio"
 	"bytes"
 	proto "code.google.com/p/goprotobuf/proto"
@@ -16,7 +17,7 @@ type ProtobufProbe struct{}
  * return : []byte - 序列化后的byte数组
  *          error  - 错误信息, 如果成功则为nil
  */
-func (self ProtobufProbe) Serialize(src *pb.MobileSuiteProtobuf) ([]byte, error) {
+func (self ProtobufProbe) Serialize(src *protocol.MobileSuiteModel) ([]byte, error) {
 	var v []byte
 	var err error
 
@@ -51,7 +52,7 @@ func (self ProtobufProbe) Serialize(src *pb.MobileSuiteProtobuf) ([]byte, error)
  * return : error          - 错误信息, 如果成功则为nil
  *          msgType        - 反序列化后的对象标识
  */
-func (self ProtobufProbe) Deserialize(src []byte, dst *pb.MobileSuiteProtobuf) (int32, error) {
+func (self ProtobufProbe) Deserialize(src []byte, dst *protocol.MobileSuiteModel) (int32, error) {
 	// msg 序列化后的对象
 	msg := src[4:]
 
@@ -64,7 +65,7 @@ func (self ProtobufProbe) Deserialize(src []byte, dst *pb.MobileSuiteProtobuf) (
 	return *dst.Type, nil
 }
 
-func (self ProtobufProbe) deserializeByReader(reader *bufio.Reader) (*pb.MobileSuiteProtobuf, int32, error) {
+func (self ProtobufProbe) DeserializeByReader(reader *bufio.Reader) (*protocol.MobileSuiteModel, int32, error) {
 	lengthByte, _ := reader.Peek(4)
 	lengthBuff := bytes.NewBuffer(lengthByte)
 	var length int32
@@ -85,7 +86,7 @@ func (self ProtobufProbe) deserializeByReader(reader *bufio.Reader) (*pb.MobileS
 		log.Error("when deserializeByReader:", err.Error())
 		return nil, -1, err
 	}
-	var dst pb.MobileSuiteProtobuf
+	var dst protocol.MobileSuiteModel
 	var msgType int32
 	msgType, err = self.Deserialize(pack, &dst)
 	log.Debug(length, msgType, dst)
