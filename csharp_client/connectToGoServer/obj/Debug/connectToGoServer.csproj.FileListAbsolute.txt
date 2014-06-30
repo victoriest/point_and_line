@@ -7,3 +7,4 @@ D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoS
 D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.csproj.GenerateResource.Cache
 D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.exe
 D:\workspace_go\go-server\csharp_client\connectToGoServer\obj\Debug\connectToGoServer.pdb
+D:\workspace_go\go-server\csharp_client\connectToGoServer\bin\Debug\protobuf-net.dll

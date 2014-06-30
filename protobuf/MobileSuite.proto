@@ -1,0 +1,12 @@
+package protocol;
+
+message MobileSuiteModel {
+	required int32 type = 1;
+	optional bytes message = 2;
+}
+
+message ChatMsg {
+	required string chatContext = 1;
+}
+
+// protoc MoblieSuiteProtobufProtocol.proto --java_out=../src/

@@ -62,7 +62,7 @@ func (self *Nexus) initConnectionManager(tcpListener *net.TCPListener) {
 		self.connMap[tcpConn.RemoteAddr().String()] = tcpConn
 		i++
 
-		log.Debug("A client connected : ", tcpConn.RemoteAddr().String())
+		log.Info("A client connected : ", tcpConn.RemoteAddr().String())
 		go self.tcpPipe(tcpConn)
 	}
 }
@@ -77,7 +77,7 @@ func (self *Nexus) Startup() {
 	utils.CheckError(err, true)
 
 	defer tcpListener.Close()
-	log.Debug("Start listen ", tcpListener.Addr().String())
+	log.Info("Start listen ", tcpListener.Addr().String())
 
 	// 连接管理
 	self.initConnectionManager(tcpListener)
@@ -89,10 +89,10 @@ func (self *Nexus) Startup() {
 func (self *Nexus) Shutdown() {
 	// 关闭所有连接
 	for _, conn := range self.connMap {
-		log.Debug("close:" + conn.RemoteAddr().String())
+		log.Info("close:" + conn.RemoteAddr().String())
 		conn.Close()
 	}
-	log.Debug("Shutdown")
+	log.Info("Shutdown")
 }
 
 /**
@@ -101,7 +101,7 @@ func (self *Nexus) Shutdown() {
 func (self *Nexus) tcpPipe(tcpConn *net.TCPConn) {
 	ipStr := tcpConn.RemoteAddr().String()
 	defer func() {
-		log.Debug("disconnected :" + ipStr)
+		log.Info("disconnected :" + ipStr)
 		self.disconnectHandler(self, tcpConn)
 
 		tcpConn.Close()

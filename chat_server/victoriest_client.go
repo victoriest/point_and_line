@@ -37,7 +37,13 @@ func readServerConfig() (string, string) {
 
 func msgReceivedHandler(client *client.RobotClient, message *protocol.MobileSuiteModel) {
 	// obj, _ := message.MsgContext.(map[string]interface{})
-	log.Info(message)
+
+	log.Info(*message.Type)
+	log.Info(message.Message)
+	msg := &protocol.ChatMsg{}
+	proto.Unmarshal(message.Message, msg)
+	log.Info(msg)
+	log.Info(*msg.ChatContext)
 }
 
 func msgSendHandler(client *client.RobotClient, writer *net.TCPConn, message string) {
@@ -47,7 +53,7 @@ func msgSendHandler(client *client.RobotClient, writer *net.TCPConn, message str
 	}
 	byt, _ := proto.Marshal(testMessage)
 	msg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(123),
+		Type:    proto.Int32(protocol.MSG_TYPE_CHAT_MESSGAE),
 		Message: byt,
 	}
 	bybuf, _ := client.Probe.Serialize(msg)
