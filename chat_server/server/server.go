@@ -20,7 +20,7 @@ type INexus interface {
 }
 
 // 消息处理托管
-type MessageRecivedHandler func(*Nexus, *protocol.MobileSuiteModel)
+type MessageRecivedHandler func(*Nexus, string, *protocol.MobileSuiteModel)
 
 // 连接状态处理托管
 type ConnectionHandler func(*Nexus, *net.TCPConn)
@@ -116,7 +116,7 @@ func (self *Nexus) tcpPipe(tcpConn *net.TCPConn) {
 		if err != nil {
 			return
 		}
-		self.recivedHandler(self, message)
+		self.recivedHandler(self, ipStr, message)
 	}
 }
 

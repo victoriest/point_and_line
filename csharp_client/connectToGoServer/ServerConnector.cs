@@ -54,15 +54,15 @@ namespace connectToGoServer
         }
 
         // 初始化连接
-        public void InitSocket(string ipParam, int portParam)
+        public bool InitSocket(string ipParam, int portParam)
         {
             Ip = ipParam;
             Port = portParam;
-            InitSocket();
+            return InitSocket();
         }
 
         // 初始化连接
-        public void InitSocket()
+        public bool InitSocket()
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Parse(Ip), Port);
@@ -74,6 +74,7 @@ namespace connectToGoServer
             {
                 CloseConnect();
                 Console.Out.WriteLine("connection error");
+                return false;
             }
             else
             {
@@ -81,6 +82,7 @@ namespace connectToGoServer
                 thread.IsBackground = true;
                 thread.Start();
             }
+            return true;
         }
 
         public void SendMessage(byte[] data)
@@ -105,7 +107,7 @@ namespace connectToGoServer
         }
 
         // 关闭连接
-        public void CloseConnect()
+        public bool CloseConnect()
         {
             if (socket != null && socket.Connected)
             {
@@ -114,6 +116,7 @@ namespace connectToGoServer
                 OnDisconnected();
             }
             socket = null;
+            return true;
         }
 
         // 接收消息线程
