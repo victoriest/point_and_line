@@ -47,6 +47,18 @@ func tcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteMo
 	case int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE):
 		server.BroadcastMessage(message)
 
+	case int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_REQ):
+		to := inGameMap[ipStr]
+		lpDto := &protocol.LineAPointDTO{}
+		proto.Unmarshal(message.Message, lpDto)
+
+		byt, _ := proto.Marshal(lpDto)
+		lpDtoMsg := &protocol.MobileSuiteModel{
+			Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_RES)),
+			Message: byt,
+		}
+		server.SendTo(to, lpDtoMsg)
+
 	case int32(protocol.MessageType_MSG_TYPE_SEARCH_A_GAME_REQ):
 		msg := &protocol.ChatMsg{}
 		proto.Unmarshal(message.Message, msg)
@@ -65,6 +77,28 @@ func tcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteMo
 
 			inGameMap[strIp1] = strIp2
 			inGameMap[strIp2] = strIp1
+
+			gsDto1 := &protocol.GameStartDTO{
+				OpptName: proto.String(ipMappingNick[strIp2]),
+				PlayerIndex: proto.Int32(1),
+			}
+			byt1, _ := proto.Marshal(gsDto1)
+			broMsg1 := &protocol.MobileSuiteModel{
+				Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_START_RES)),
+				Message: byt1,
+			}
+			server.SendTo(strIp1, broMsg1)
+
+			gsDto2 := &protocol.GameStartDTO{
+				OpptName: proto.String(ipMappingNick[strIp1]),
+				PlayerIndex: proto.Int32(2),
+			}
+			byt2, _ := proto.Marshal(gsDto2)
+			broMsg2 := &protocol.MobileSuiteModel{
+				Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_START_RES)),
+				Message: byt2,
+			}
+			server.SendTo(strIp2, broMsg2)
 		}
 	}
 }

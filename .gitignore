@@ -3,3 +3,7 @@ csharp_client/connectToGoServer/bin/Debug/connectToGoServer.exe.config
 csharp_client/connectToGoServer/bin/Debug/connectToGoServer.vshost.exe.config
 csharp_client/connectToGoServer/bin/Debug/connectToGoServer.vshost.exe.manifest
 csharp_client/connectToGoServer/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+csharp_client/connectToGoServer/bin/Debug/connectToGoServer.pdb
+*.Cache
+*.Cache
+csharp_client/connectToGoServer/obj/Debug/connectToGoServer.pdb

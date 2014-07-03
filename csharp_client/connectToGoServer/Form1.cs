@@ -26,6 +26,9 @@ namespace connectToGoServer
 
         private string opptNick = "";
 
+        public delegate void startNewGameDelegate();
+        public startNewGameDelegate start;
+
         public Form1()
         {
             InitializeComponent();
@@ -83,7 +86,9 @@ namespace connectToGoServer
                     GameStartDTO gsDto = ProtoBuf.Serializer.Deserialize<GameStartDTO>(stream);
                     playerIndex = gsDto.playerIndex;
                     opptNick = gsDto.opptName;
-                    StartGame();
+                    //StartGame();
+                    start = new startNewGameDelegate(StartGame);
+                    this.Invoke(start);
                     break;
                 case (int)MessageType.MSG_TYPE_LINE_A_POINT_RES:
                     stream = new MemoryStream(msm.message);
@@ -172,7 +177,7 @@ namespace connectToGoServer
             String[] arr = str.Split(new char[]{'_'});
 
             int playerId = game.whosTurn;
-            int result = game.Line(Int32.Parse(arr[0]), Int32.Parse(arr[1]), game.whosTurn);
+            int result = game.Line(Int32.Parse(arr[0]), Int32.Parse(arr[1]), playerIndex);
             if (result == 1)
             {
                 MessageBox.Show("还没轮到你走魂淡!");
@@ -192,6 +197,39 @@ namespace connectToGoServer
             {
                 Color color = Color.FromArgb(0, 0, 255);
                 currentButton.BackColor = color;
+            }
+
+            if (result == 0)
+            {
+                MobileSuiteModel msm = new MobileSuiteModel();
+                msm.type = (int)MessageType.MSG_TYPE_LINE_A_POINT_REQ;
+
+                LineAPointDTO lpDto = new LineAPointDTO();
+                lpDto.row = Int32.Parse(arr[0]);
+                lpDto.col = Int32.Parse(arr[1]);
+                lpDto.playerIndex = playerIndex;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    ProtoBuf.Serializer.Serialize<LineAPointDTO>(ms, lpDto);
+                    msm.message = ms.ToArray();
+                    ms.Close();
+                }
+                byte[] bytes;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    ProtoBuf.Serializer.Serialize(ms, msm);
+                    bytes = ms.ToArray();
+                    ms.Close();
+                }
+
+                int length = bytes.Length;
+                byte[] data = new byte[length + 4];
+                byte[] lengthBytes = BitConverter.GetBytes(length);
+                Array.Copy(lengthBytes, data, 4);
+                Array.Copy(bytes, 0, data, 4, length);
+
+                connector.SendMessage(data);
             }
             
             updateState();
