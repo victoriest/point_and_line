@@ -2,6 +2,7 @@
 package main
 
 import (
+	"./dao"
 	"./goconfig"
 	"database/sql"
 	"fmt"
@@ -11,7 +12,23 @@ import (
 
 func main() {
 	// testReadConfig()
-	testSql()
+	// testSql()
+	testConnector()
+}
+
+func testConnector() {
+	connection := new(dao.MysqlConnector)
+	ip := "192.168.1.11"
+	account := "victoriest"
+	pwd := "rockfrog"
+	schame := "point_and_line"
+	connection.Connect(&ip, 3306, &account, &pwd, &schame)
+	user := new(dao.User)
+	user.Name = "est"
+	user.Round = 0
+	user.WinCount = 0
+	user.Rank = 0
+	connection.Insert(user)
 }
 
 func testReadConfig() {
