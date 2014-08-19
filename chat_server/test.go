@@ -23,12 +23,16 @@ func testConnector() {
 	pwd := "rockfrog"
 	schame := "point_and_line"
 	connection.Connect(&ip, 3306, &account, &pwd, &schame)
-	user := new(dao.User)
-	user.Name = "est"
-	user.Round = 0
-	user.WinCount = 0
-	user.Rank = 0
-	connection.Insert(user)
+	// user := new(dao.User)
+	// user.Name = "est"
+	// user.Round = 0
+	// user.WinCount = 0
+	// user.Rank = 0
+	users, _ := connection.QueryByUserId(2)
+	for _, user := range users {
+		println(user.Id)
+		println(user.Name)
+	}
 }
 
 func testReadConfig() {

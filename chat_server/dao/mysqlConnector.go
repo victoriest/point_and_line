@@ -48,23 +48,35 @@ func (self *MysqlConnector) Insert(user *User) (int, error) {
 	return 0, err
 }
 
-func (self *MysqlConnector) Query(user *User) interface {
+func (self *MysqlConnector) QueryByUserId(userId int) ([]User, error) {
 	err := self.connection.Ping()
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
+	result, err := self.connection.Query("SELECT * FROM user WHERE id=" + strconv.Itoa(userId))
+	defer result.Close()
+
+	users := []User{}
+	for result.Next() {
+		u := new(User)
+		result.Scan(&u.Id, &u.Name, &u.Round, &u.WinCount, &u.Rank)
+		users = append(users, *u)
+	}
+	return users, nil
 }
 
-func (self *MysqlConnector) Update(user *User) int {
+func (self *MysqlConnector) Update(user *User) (int, error) {
 	err := self.connection.Ping()
 	if err != nil {
 		return -1, err
 	}
-	_, err = self.connection.Exec("UPDATE user SET name='" + user.Name + "', round=" + strconv.Itoa(user.Round) + ", win_count=" + strconv.Itoa(user.WinCount) + ", rank= WHERE id=" + strconv.Itoa(user.Id))
+	var base int
+	userId := strconv.FormatInt(user.Id, base)
+	_, err = self.connection.Exec("UPDATE user SET name='" + user.Name + "', round=" + strconv.Itoa(user.Round) + ", win_count=" + strconv.Itoa(user.WinCount) + ", rank= WHERE id=" + userId)
 	return 0, err
 }
 
-func (self *MysqlConnector) Delete(userId int) int {
+func (self *MysqlConnector) Delete(userId int) (int, error) {
 	err := self.connection.Ping()
 	if err != nil {
 		return -1, err
