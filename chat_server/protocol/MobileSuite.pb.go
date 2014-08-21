@@ -13,6 +13,8 @@ It has these top-level messages:
 	ChatMsg
 	GameStartDTO
 	LineAPointDTO
+	CreateUserDTO
+	LoginDTO
 */
 package protocol
 
@@ -169,6 +171,38 @@ func (m *LineAPointDTO) GetCol() int32 {
 func (m *LineAPointDTO) GetPlayerIndex() int32 {
 	if m != nil && m.PlayerIndex != nil {
 		return *m.PlayerIndex
+	}
+	return 0
+}
+
+type CreateUserDTO struct {
+	Name             *string `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *CreateUserDTO) Reset()         { *m = CreateUserDTO{} }
+func (m *CreateUserDTO) String() string { return proto.CompactTextString(m) }
+func (*CreateUserDTO) ProtoMessage()    {}
+
+func (m *CreateUserDTO) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+type LoginDTO struct {
+	UserId           *int32 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *LoginDTO) Reset()         { *m = LoginDTO{} }
+func (m *LoginDTO) String() string { return proto.CompactTextString(m) }
+func (*LoginDTO) ProtoMessage()    {}
+
+func (m *LoginDTO) GetUserId() int32 {
+	if m != nil && m.UserId != nil {
+		return *m.UserId
 	}
 	return 0
 }

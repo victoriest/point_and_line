@@ -1,6 +1,8 @@
 package protocol;
 
 // protoc MoblieSuiteProtobufProtocol.proto --java_out=../src/
+// protoc MoblieSuiteProtobufProtocol.proto --go_out=../src/
+// protoc MoblieSuiteProtobufProtocol.proto --go_out=../src/
 
 enum MessageType {
 	MSG_TYPE_CHAT_MESSGAE = 1;		// 聊天信息:消息体为ChatMsg
@@ -40,4 +42,14 @@ message LineAPointDTO {
 	required int32 row = 1;
 	required int32 col = 2;
 	required int32 playerIndex = 3;
+}
+
+// 创建角色
+message CreateUserDTO {
+	required string name = 1;
+}
+
+// 登陆
+message LoginDTO {
+	required int32 userId = 1; 
 }

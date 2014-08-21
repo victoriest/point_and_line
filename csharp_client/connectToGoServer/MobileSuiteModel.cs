@@ -107,6 +107,40 @@ namespace protocol
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"CreateUserDTO")]
+  public partial class CreateUserDTO : global::ProtoBuf.IExtensible
+  {
+    public CreateUserDTO() {}
+    
+    private string _name;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"name", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string name
+    {
+      get { return _name; }
+      set { _name = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"LoginDTO")]
+  public partial class LoginDTO : global::ProtoBuf.IExtensible
+  {
+    public LoginDTO() {}
+    
+    private int _userId;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int userId
+    {
+      get { return _userId; }
+      set { _userId = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
     [global::ProtoBuf.ProtoContract(Name=@"MessageType")]
     public enum MessageType
     {
