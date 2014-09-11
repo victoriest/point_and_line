@@ -44,8 +44,9 @@ func (self *MysqlConnector) Insert(user *User) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	_, err = self.connection.Exec("INSERT INTO user(`name`,`round`,`win_count`,`rank`) VALUES ('" + user.Name + "'," + strconv.Itoa(user.Round) + "," + strconv.Itoa(user.WinCount) + "," + strconv.Itoa(user.Rank) + ")")
-	return 0, err
+	result, _ := self.connection.Exec("INSERT INTO user(`name`,`round`,`win_count`,`rank`) VALUES ('" + user.Name + "'," + strconv.Itoa(user.Round) + "," + strconv.Itoa(user.WinCount) + "," + strconv.Itoa(user.Rank) + ")")
+	userId, _ := result.LastInsertId()
+	return int(userId), err
 }
 
 func (self *MysqlConnector) QueryByUserId(userId int) ([]User, error) {

@@ -124,6 +124,23 @@ namespace protocol
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"CreateResultDTO")]
+  public partial class CreateResultDTO : global::ProtoBuf.IExtensible
+  {
+    public CreateResultDTO() {}
+    
+    private int _userId;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int userId
+    {
+      get { return _userId; }
+      set { _userId = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
   [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"LoginDTO")]
   public partial class LoginDTO : global::ProtoBuf.IExtensible
   {

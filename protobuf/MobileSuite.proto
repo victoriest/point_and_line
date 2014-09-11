@@ -55,8 +55,17 @@ message CreateUserDTO {
 	required string name = 1;
 }
 
+// 创建角色返回
+message CreateResultDTO {
+	required int32 userId = 1;
+}
+
 // 登陆
 message LoginDTO {
+	required int32 userId = 1;
+}
+// 登陆返回
+message LoginResultDTO {
 	required int32 userId = 1;
 	required string name = 2;
 	required int32 Round = 3;

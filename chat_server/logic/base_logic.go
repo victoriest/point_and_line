@@ -18,37 +18,41 @@ func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.Mobile
 	user.WinCount = 0
 	user.Rank = 0
 
-	result, err := server.DbConnector.Insert(user)
-	msgRes := proto.Int32(int32(result))
-	byt, _ := proto.Marshal(*msgRes)
+	// result, _ := server.DbConnector.Insert(user)
+	// createResult := &protocol.CreateResultDTO{
+	// 	UserId: result,
+	// }
 
-	lpDtoMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES)),
-		Message: byt,
-	}
-	server.SendTo(to, lpDtoMsg)
+	// byt, _ := proto.Marshal(*createResult)
+
+	// lpDtoMsg := &protocol.MobileSuiteModel{
+	// 	Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES)),
+	// 	Message: byt,
+	// }
+	// server.SendTo(to, lpDtoMsg)
 
 }
 
 func procerssLogin(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
 	to := inGameMap[ipStr]
-	var userId int
-	proto.Unmarshal(message.Message, userId)
-
-	userArr, err := server.DbConnector.QueryByUserId(userId)
 	loginDto := &protocol.LoginDTO{}
+	proto.Unmarshal(message.Message, loginDto)
+
+	userArr, err := server.DbConnector.QueryByUserId(int(*loginDto.UserId))
+	loginResultDto := &protocol.LoginResultDTO{}
 	if len(userArr) > 0 {
+		user := dao.User(userArr[0])
 		// 登陆成功
-		loginDto.UserId = userArr[0].Id
-		loginDto.Name = userArr[0].Name
-		loginDto.Round = userArr[0].Round
-		loginDto.WinCount = userArr[0].WinCound
-		loginDto.Rank = userArr[0].Rank
+		loginResultDto.UserId = user.Id
+		loginResultDto.Name = user.Name
+		loginResultDto.Round = user.Round
+		loginResultDto.WinCount = user.WinCount
+		loginResultDto.Rank = user.Rank
 	}
 
-	byt, _ := proto.Marshal(loginDto)
+	byt, _ := proto.Marshal(loginResultDto)
 	lpDtoMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES)),
+		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LOGIN_RES)),
 		Message: byt,
 	}
 
