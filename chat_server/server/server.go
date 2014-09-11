@@ -2,6 +2,7 @@ package server
 
 import (
 	"../codec"
+	"../dao"
 	"../protocol"
 	"../utils"
 	"bufio"
@@ -33,9 +34,10 @@ type Nexus struct {
 	newConnectionHandler ConnectionHandler       // 新连接处理Handler
 	disconnectHandler    ConnectionHandler       // 断开连接处理Handler
 	probe                codec.ProtobufProbe     // 序列化接口
+	DbConnector          *dao.MysqlConnector
 }
 
-func NewNexus(port string, handler MessageRecivedHandler, connHander ConnectionHandler, disconnHander ConnectionHandler) *Nexus {
+func NewNexus(port string, handler MessageRecivedHandler, connHander ConnectionHandler, disconnHander ConnectionHandler, dbCon *dao.MysqlConnector) *Nexus {
 	nexus := new(Nexus)
 	nexus.port = port
 	nexus.connMap = make(map[string]*net.TCPConn)
@@ -44,6 +46,7 @@ func NewNexus(port string, handler MessageRecivedHandler, connHander ConnectionH
 	nexus.newConnectionHandler = connHander
 	nexus.disconnectHandler = disconnHander
 	nexus.probe = *new(codec.ProtobufProbe)
+	nexus.DbConnector = dbCon
 	return nexus
 }
 

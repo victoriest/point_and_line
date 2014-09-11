@@ -136,6 +136,51 @@ namespace protocol
       get { return _userId; }
       set { _userId = value; }
     }
+    private string _name;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"name", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string name
+    {
+      get { return _name; }
+      set { _name = value; }
+    }
+    private int _Round;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"Round", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int Round
+    {
+      get { return _Round; }
+      set { _Round = value; }
+    }
+    private int _WinCount;
+    [global::ProtoBuf.ProtoMember(4, IsRequired = true, Name=@"WinCount", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int WinCount
+    {
+      get { return _WinCount; }
+      set { _WinCount = value; }
+    }
+    private int _Rank;
+    [global::ProtoBuf.ProtoMember(5, IsRequired = true, Name=@"Rank", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int Rank
+    {
+      get { return _Rank; }
+      set { _Rank = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"LogoutDTO")]
+  public partial class LogoutDTO : global::ProtoBuf.IExtensible
+  {
+    public LogoutDTO() {}
+    
+    private int _userId;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int userId
+    {
+      get { return _userId; }
+      set { _userId = value; }
+    }
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
@@ -170,7 +215,19 @@ namespace protocol
       MSG_TYPE_LINE_A_POINT_RES = 10,
             
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_END_GAME_REQ", Value=11)]
-      MSG_TYPE_END_GAME_REQ = 11
+      MSG_TYPE_END_GAME_REQ = 11,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_CREATE_USER_REQ", Value=101)]
+      MSG_TYPE_CREATE_USER_REQ = 101,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_CREATE_USER_RES", Value=102)]
+      MSG_TYPE_CREATE_USER_RES = 102,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LOGIN_REQ", Value=103)]
+      MSG_TYPE_LOGIN_REQ = 103,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LOGIN_RES", Value=104)]
+      MSG_TYPE_LOGIN_RES = 104
     }
   
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./dao"
 	"./goconfig"
 	"./logic"
 	sev "./server"
@@ -14,7 +15,11 @@ import (
 
 func main() {
 	log.LoadConfiguration("./log4go.config")
-	server := sev.NewNexus(readServerPort(), logic.TcpHandler, logic.ConnectedHandler, logic.DisconnectingHander)
+	port, ip, account, pwd, schame := readServerPort()
+	dbCon := new(dao.MysqlConnector)
+	dbCon.Connect(&ip, 3306, &account, &pwd, &schame)
+
+	server := sev.NewNexus(port, logic.TcpHandler, logic.ConnectedHandler, logic.DisconnectingHander, dbCon)
 	server.Startup()
 }
 
@@ -27,5 +32,13 @@ func readServerPort() string {
 	utils.CheckError(err, true)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
 	utils.CheckError(err, true)
-	return port
+	ip, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.ip")
+	utils.CheckError(err, true)
+	account, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.user")
+	utils.CheckError(err, true)
+	pwd, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.pwd")
+	utils.CheckError(err, true)
+	schame, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.schame")
+	utils.CheckError(err, true)
+	return port, ip, account, pwd, schame
 }

@@ -19,6 +19,12 @@ enum MessageType {
 	MSG_TYPE_LINE_A_POINT_RES = 10;		
 
 	MSG_TYPE_END_GAME_REQ = 11;
+
+	MSG_TYPE_CREATE_USER_REQ = 101;		// 创建一个角色
+	MSG_TYPE_CREATE_USER_RES = 102;
+
+	MSG_TYPE_LOGIN_REQ = 103;			// 登陆
+	MSG_TYPE_LOGIN_RES = 104;
 }
 
 message MobileSuiteModel {
@@ -51,5 +57,14 @@ message CreateUserDTO {
 
 // 登陆
 message LoginDTO {
-	required int32 userId = 1; 
+	required int32 userId = 1;
+	required string name = 2;
+	required int32 Round = 3;
+	required int32 WinCount = 4;
+	required int32 Rank = 5;
+}
+
+// 退出登陆
+message LogoutDTO {
+	required int32 userId = 1;
 }

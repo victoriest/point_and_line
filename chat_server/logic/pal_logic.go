@@ -25,6 +25,10 @@ func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteMo
 		processLinePoint(server, ipStr, message)
 	case int32(protocol.MessageType_MSG_TYPE_SEARCH_A_GAME_REQ):
 		processSearchGame(server, ipStr, message)
+	case int32(protocol.MessageType_MSG_TYPE_CREATE_USER_REQ):
+		processCreateUser(server, ipStr, message)
+	case int32(protocol.MessageType_MSG_TYPE_LOGIN_REQ):
+		procerssLogin(server, ipStr, message)
 	}
 }
 
