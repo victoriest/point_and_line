@@ -18,18 +18,18 @@ func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.Mobile
 	user.WinCount = 0
 	user.Rank = 0
 
-	// result, _ := server.DbConnector.Insert(user)
-	// createResult := &protocol.CreateResultDTO{
-	// 	UserId: result,
-	// }
+	result, _ := server.DbConnector.Insert(user)
+	createResult := &protocol.CreateResultDTO{
+		UserId: *result,
+	}
 
-	// byt, _ := proto.Marshal(*createResult)
+	byt, _ := proto.Marshal(*createResult)
 
-	// lpDtoMsg := &protocol.MobileSuiteModel{
-	// 	Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES)),
-	// 	Message: byt,
-	// }
-	// server.SendTo(to, lpDtoMsg)
+	lpDtoMsg := &protocol.MobileSuiteModel{
+		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES)),
+		Message: byt,
+	}
+	server.SendTo(to, lpDtoMsg)
 
 }
 
@@ -43,11 +43,11 @@ func procerssLogin(server *sev.Nexus, ipStr string, message *protocol.MobileSuit
 	if len(userArr) > 0 {
 		user := dao.User(userArr[0])
 		// 登陆成功
-		loginResultDto.UserId = user.Id
-		loginResultDto.Name = user.Name
-		loginResultDto.Round = user.Round
-		loginResultDto.WinCount = user.WinCount
-		loginResultDto.Rank = user.Rank
+		loginResultDto.UserId = proto.Int32(int64(*user.Id))
+		loginResultDto.Name = *user.Name
+		loginResultDto.Round = int(user.Round)
+		loginResultDto.WinCount = int(user.WinCount)
+		loginResultDto.Rank = int(user.Rank)
 	}
 
 	byt, _ := proto.Marshal(loginResultDto)

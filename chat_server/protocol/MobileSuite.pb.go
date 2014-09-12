@@ -14,7 +14,9 @@ It has these top-level messages:
 	GameStartDTO
 	LineAPointDTO
 	CreateUserDTO
+	CreateResultDTO
 	LoginDTO
+	LoginResultDTO
 	LogoutDTO
 */
 package protocol
@@ -204,8 +206,40 @@ func (m *CreateUserDTO) GetName() string {
 	return ""
 }
 
+type CreateResultDTO struct {
+	UserId           *int64 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *CreateResultDTO) Reset()         { *m = CreateResultDTO{} }
+func (m *CreateResultDTO) String() string { return proto.CompactTextString(m) }
+func (*CreateResultDTO) ProtoMessage()    {}
+
+func (m *CreateResultDTO) GetUserId() int64 {
+	if m != nil && m.UserId != nil {
+		return *m.UserId
+	}
+	return 0
+}
+
 type LoginDTO struct {
-	UserId           *int32  `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
+	UserId           *int64 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *LoginDTO) Reset()         { *m = LoginDTO{} }
+func (m *LoginDTO) String() string { return proto.CompactTextString(m) }
+func (*LoginDTO) ProtoMessage()    {}
+
+func (m *LoginDTO) GetUserId() int64 {
+	if m != nil && m.UserId != nil {
+		return *m.UserId
+	}
+	return 0
+}
+
+type LoginResultDTO struct {
+	UserId           *int64  `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
 	Name             *string `protobuf:"bytes,2,req,name=name" json:"name,omitempty"`
 	Round            *int32  `protobuf:"varint,3,req" json:"Round,omitempty"`
 	WinCount         *int32  `protobuf:"varint,4,req" json:"WinCount,omitempty"`
@@ -213,39 +247,39 @@ type LoginDTO struct {
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *LoginDTO) Reset()         { *m = LoginDTO{} }
-func (m *LoginDTO) String() string { return proto.CompactTextString(m) }
-func (*LoginDTO) ProtoMessage()    {}
+func (m *LoginResultDTO) Reset()         { *m = LoginResultDTO{} }
+func (m *LoginResultDTO) String() string { return proto.CompactTextString(m) }
+func (*LoginResultDTO) ProtoMessage()    {}
 
-func (m *LoginDTO) GetUserId() int32 {
+func (m *LoginResultDTO) GetUserId() int64 {
 	if m != nil && m.UserId != nil {
 		return *m.UserId
 	}
 	return 0
 }
 
-func (m *LoginDTO) GetName() string {
+func (m *LoginResultDTO) GetName() string {
 	if m != nil && m.Name != nil {
 		return *m.Name
 	}
 	return ""
 }
 
-func (m *LoginDTO) GetRound() int32 {
+func (m *LoginResultDTO) GetRound() int32 {
 	if m != nil && m.Round != nil {
 		return *m.Round
 	}
 	return 0
 }
 
-func (m *LoginDTO) GetWinCount() int32 {
+func (m *LoginResultDTO) GetWinCount() int32 {
 	if m != nil && m.WinCount != nil {
 		return *m.WinCount
 	}
 	return 0
 }
 
-func (m *LoginDTO) GetRank() int32 {
+func (m *LoginResultDTO) GetRank() int32 {
 	if m != nil && m.Rank != nil {
 		return *m.Rank
 	}
@@ -253,7 +287,7 @@ func (m *LoginDTO) GetRank() int32 {
 }
 
 type LogoutDTO struct {
-	UserId           *int32 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
+	UserId           *int64 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
 }
 
@@ -261,7 +295,7 @@ func (m *LogoutDTO) Reset()         { *m = LogoutDTO{} }
 func (m *LogoutDTO) String() string { return proto.CompactTextString(m) }
 func (*LogoutDTO) ProtoMessage()    {}
 
-func (m *LogoutDTO) GetUserId() int32 {
+func (m *LogoutDTO) GetUserId() int64 {
 	if m != nil && m.UserId != nil {
 		return *m.UserId
 	}

@@ -57,16 +57,16 @@ message CreateUserDTO {
 
 // 创建角色返回
 message CreateResultDTO {
-	required int32 userId = 1;
+	required int64 userId = 1;
 }
 
 // 登陆
 message LoginDTO {
-	required int32 userId = 1;
+	required int64 userId = 1;
 }
 // 登陆返回
 message LoginResultDTO {
-	required int32 userId = 1;
+	required int64 userId = 1;
 	required string name = 2;
 	required int32 Round = 3;
 	required int32 WinCount = 4;
@@ -75,5 +75,5 @@ message LoginResultDTO {
 
 // 退出登陆
 message LogoutDTO {
-	required int32 userId = 1;
+	required int64 userId = 1;
 }

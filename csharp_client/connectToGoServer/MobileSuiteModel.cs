@@ -129,9 +129,9 @@ namespace protocol
   {
     public CreateResultDTO() {}
     
-    private int _userId;
+    private long _userId;
     [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public int userId
+    public long userId
     {
       get { return _userId; }
       set { _userId = value; }
@@ -146,9 +146,26 @@ namespace protocol
   {
     public LoginDTO() {}
     
-    private int _userId;
+    private long _userId;
     [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public int userId
+    public long userId
+    {
+      get { return _userId; }
+      set { _userId = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"LoginResultDTO")]
+  public partial class LoginResultDTO : global::ProtoBuf.IExtensible
+  {
+    public LoginResultDTO() {}
+    
+    private long _userId;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public long userId
     {
       get { return _userId; }
       set { _userId = value; }
@@ -191,9 +208,9 @@ namespace protocol
   {
     public LogoutDTO() {}
     
-    private int _userId;
+    private long _userId;
     [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public int userId
+    public long userId
     {
       get { return _userId; }
       set { _userId = value; }
