@@ -39,22 +39,22 @@ func (self *MysqlConnector) Close() bool {
 	return true
 }
 
-func (self *MysqlConnector) Insert(user *User) (int, error) {
+func (self *MysqlConnector) Insert(user *User) (int64, error) {
 	err := self.connection.Ping()
 	if err != nil {
 		return -1, err
 	}
 	result, _ := self.connection.Exec("INSERT INTO user(`name`,`round`,`win_count`,`rank`) VALUES ('" + user.Name + "'," + strconv.Itoa(user.Round) + "," + strconv.Itoa(user.WinCount) + "," + strconv.Itoa(user.Rank) + ")")
 	userId, _ := result.LastInsertId()
-	return int(userId), err
+	return userId, err
 }
 
-func (self *MysqlConnector) QueryByUserId(userId int) ([]User, error) {
+func (self *MysqlConnector) QueryByUserId(userId int64) ([]User, error) {
 	err := self.connection.Ping()
 	if err != nil {
 		return nil, err
 	}
-	result, err := self.connection.Query("SELECT * FROM user WHERE id=" + strconv.Itoa(userId))
+	result, err := self.connection.Query("SELECT * FROM user WHERE id=" + strconv.Itoa(int(userId)))
 	defer result.Close()
 
 	users := []User{}

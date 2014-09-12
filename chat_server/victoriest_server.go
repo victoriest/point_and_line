@@ -24,7 +24,7 @@ func main() {
 }
 
 // 读取配置文件
-func readServerPort() string {
+func readServerPort() (string, string, string, string, string) {
 	exefile, _ := exec.LookPath(os.Args[0])
 	log.Info(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server.config")
