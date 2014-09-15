@@ -76,6 +76,12 @@ namespace connectToGoServer
             MobileSuiteModel msm = ProtoBuf.Serializer.Deserialize<MobileSuiteModel>(stream);
             switch (msm.type) 
             {
+                case (int)MessageType.MSG_TYPE_CREATE_USER_RES:
+                    stream = new MemoryStream(msm.message);
+                    CreateResultDTO createResult = ProtoBuf.Serializer.Deserialize<CreateResultDTO>(stream);
+                    lbInfo.Items.Add(createResult.userId);
+                    txtUserId.Text = createResult.userId.ToString();
+                    break;
                 case (int)MessageType.MSG_TYPE_CHAT_MESSGAE:
                     stream = new MemoryStream(msm.message);
                     ChatMsg chat = ProtoBuf.Serializer.Deserialize<ChatMsg>(stream);
@@ -327,6 +333,37 @@ namespace connectToGoServer
             using (MemoryStream ms = new MemoryStream())
             {
                 ProtoBuf.Serializer.Serialize<ChatMsg>(ms, chat);
+                msm.message = ms.ToArray();
+                ms.Close();
+            }
+            byte[] bytes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(ms, msm);
+                bytes = ms.ToArray();
+                ms.Close();
+            }
+
+            int length = bytes.Length;
+            byte[] data = new byte[length + 4];
+            byte[] lengthBytes = BitConverter.GetBytes(length);
+            Array.Copy(lengthBytes, data, 4);
+            Array.Copy(bytes, 0, data, 4, length);
+
+            connector.SendMessage(data);
+        }
+
+        private void btnCreateUser_Click(object sender, EventArgs e)
+        {
+            MobileSuiteModel msm = new MobileSuiteModel();
+            msm.type = (int)MessageType.MSG_TYPE_CREATE_USER_REQ;
+
+            CreateUserDTO dto = new CreateUserDTO();
+            dto.name = txtNick.Text;
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize<CreateUserDTO>(ms, dto);
                 msm.message = ms.ToArray();
                 ms.Close();
             }

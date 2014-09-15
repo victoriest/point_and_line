@@ -5,10 +5,11 @@ import (
 	"../protocol"
 	sev "../server"
 	proto "code.google.com/p/goprotobuf/proto"
+	log "code.google.com/p/log4go"
 )
 
 func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
-	to := inGameMap[ipStr]
+
 	createUserDto := &protocol.CreateUserDTO{}
 	proto.Unmarshal(message.Message, createUserDto)
 
@@ -18,18 +19,23 @@ func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.Mobile
 	user.WinCount = 0
 	user.Rank = 0
 
-	result, _ := server.DbConnector.Insert(user)
-	createResult := &protocol.CreateResultDTO{
-		UserId: &result,
+	result, err := server.DbConnector.Insert(user)
+	if err != nil {
+		log.Info(err)
+		return
 	}
-
+	createResult := &protocol.CreateResultDTO{
+		UserId: proto.Int64(int64(result)),
+	}
+	log.Info(result)
 	byt, _ := proto.Marshal(createResult)
 
 	lpDtoMsg := &protocol.MobileSuiteModel{
 		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES)),
 		Message: byt,
 	}
-	server.SendTo(to, lpDtoMsg)
+	server.SendTo(ipStr, lpDtoMsg)
+	log.Info(createUserDto.Name)
 
 }
 

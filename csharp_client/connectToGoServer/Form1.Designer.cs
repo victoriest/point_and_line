@@ -43,6 +43,9 @@
             this.labTurn = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.txtNick = new System.Windows.Forms.TextBox();
+            this.btnCreateUser = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txtUserId = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnConnect
@@ -61,7 +64,7 @@
             this.txtIp.Name = "txtIp";
             this.txtIp.Size = new System.Drawing.Size(92, 21);
             this.txtIp.TabIndex = 1;
-            this.txtIp.Text = "192.168.0.31";
+            this.txtIp.Text = "127.0.0.1";
             // 
             // txtPort
             // 
@@ -85,9 +88,9 @@
             // 
             this.lbInfo.FormattingEnabled = true;
             this.lbInfo.ItemHeight = 12;
-            this.lbInfo.Location = new System.Drawing.Point(14, 44);
+            this.lbInfo.Location = new System.Drawing.Point(14, 80);
             this.lbInfo.Name = "lbInfo";
-            this.lbInfo.Size = new System.Drawing.Size(450, 352);
+            this.lbInfo.Size = new System.Drawing.Size(450, 316);
             this.lbInfo.TabIndex = 6;
             // 
             // txtMsg
@@ -179,12 +182,41 @@
             this.txtNick.Size = new System.Drawing.Size(98, 21);
             this.txtNick.TabIndex = 16;
             // 
+            // btnCreateUser
+            // 
+            this.btnCreateUser.Location = new System.Drawing.Point(389, 43);
+            this.btnCreateUser.Name = "btnCreateUser";
+            this.btnCreateUser.Size = new System.Drawing.Size(75, 23);
+            this.btnCreateUser.TabIndex = 17;
+            this.btnCreateUser.Text = "createUser";
+            this.btnCreateUser.UseVisualStyleBackColor = true;
+            this.btnCreateUser.Click += new System.EventHandler(this.btnCreateUser_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 48);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(47, 12);
+            this.label2.TabIndex = 18;
+            this.label2.Text = "userId:";
+            // 
+            // txtUserId
+            // 
+            this.txtUserId.Location = new System.Drawing.Point(67, 45);
+            this.txtUserId.Name = "txtUserId";
+            this.txtUserId.Size = new System.Drawing.Size(98, 21);
+            this.txtUserId.TabIndex = 19;
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnSend;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(847, 436);
+            this.Controls.Add(this.txtUserId);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.btnCreateUser);
             this.Controls.Add(this.txtNick);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.labTurn);
@@ -224,6 +256,9 @@
         private System.Windows.Forms.Label labTurn;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtNick;
+        private System.Windows.Forms.Button btnCreateUser;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox txtUserId;
     }
 }
 
