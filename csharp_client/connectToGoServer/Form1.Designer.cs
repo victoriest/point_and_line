@@ -28,9 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnConnect = new System.Windows.Forms.Button();
-            this.txtIp = new System.Windows.Forms.TextBox();
-            this.txtPort = new System.Windows.Forms.TextBox();
             this.btnDisconnect = new System.Windows.Forms.Button();
             this.lbInfo = new System.Windows.Forms.ListBox();
             this.txtMsg = new System.Windows.Forms.TextBox();
@@ -41,46 +38,20 @@
             this.labPlayer1Socre = new System.Windows.Forms.Label();
             this.labPlayer2Socre = new System.Windows.Forms.Label();
             this.labTurn = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtNick = new System.Windows.Forms.TextBox();
-            this.btnCreateUser = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.txtUserId = new System.Windows.Forms.TextBox();
+            this.lblIn = new System.Windows.Forms.Label();
+            this.txtIn = new System.Windows.Forms.TextBox();
+            this.btnIn = new System.Windows.Forms.Button();
+            this.radioLogin = new System.Windows.Forms.RadioButton();
+            this.radioSign = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
-            // 
-            // btnConnect
-            // 
-            this.btnConnect.Location = new System.Drawing.Point(308, 12);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(75, 23);
-            this.btnConnect.TabIndex = 0;
-            this.btnConnect.Text = "connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
-            // 
-            // txtIp
-            // 
-            this.txtIp.Location = new System.Drawing.Point(171, 14);
-            this.txtIp.Name = "txtIp";
-            this.txtIp.Size = new System.Drawing.Size(92, 21);
-            this.txtIp.TabIndex = 1;
-            this.txtIp.Text = "127.0.0.1";
-            // 
-            // txtPort
-            // 
-            this.txtPort.Location = new System.Drawing.Point(269, 14);
-            this.txtPort.Name = "txtPort";
-            this.txtPort.Size = new System.Drawing.Size(33, 21);
-            this.txtPort.TabIndex = 2;
-            this.txtPort.Text = "8990";
             // 
             // btnDisconnect
             // 
-            this.btnDisconnect.Location = new System.Drawing.Point(389, 12);
+            this.btnDisconnect.Location = new System.Drawing.Point(760, 431);
             this.btnDisconnect.Name = "btnDisconnect";
             this.btnDisconnect.Size = new System.Drawing.Size(75, 23);
             this.btnDisconnect.TabIndex = 5;
-            this.btnDisconnect.Text = "disconnect";
+            this.btnDisconnect.Text = "close";
             this.btnDisconnect.UseVisualStyleBackColor = true;
             this.btnDisconnect.Click += new System.EventHandler(this.btnDisconnect_Click);
             // 
@@ -88,22 +59,22 @@
             // 
             this.lbInfo.FormattingEnabled = true;
             this.lbInfo.ItemHeight = 12;
-            this.lbInfo.Location = new System.Drawing.Point(14, 80);
+            this.lbInfo.Location = new System.Drawing.Point(14, 44);
             this.lbInfo.Name = "lbInfo";
-            this.lbInfo.Size = new System.Drawing.Size(450, 316);
+            this.lbInfo.Size = new System.Drawing.Size(470, 376);
             this.lbInfo.TabIndex = 6;
             // 
             // txtMsg
             // 
-            this.txtMsg.Location = new System.Drawing.Point(12, 404);
+            this.txtMsg.Location = new System.Drawing.Point(14, 433);
             this.txtMsg.Name = "txtMsg";
-            this.txtMsg.Size = new System.Drawing.Size(369, 21);
+            this.txtMsg.Size = new System.Drawing.Size(391, 21);
             this.txtMsg.TabIndex = 7;
             this.txtMsg.Text = "hello wrold";
             // 
             // btnSend
             // 
-            this.btnSend.Location = new System.Drawing.Point(389, 402);
+            this.btnSend.Location = new System.Drawing.Point(411, 431);
             this.btnSend.Name = "btnSend";
             this.btnSend.Size = new System.Drawing.Size(75, 23);
             this.btnSend.TabIndex = 8;
@@ -166,59 +137,67 @@
             this.labTurn.TabIndex = 14;
             this.labTurn.Text = "轮到";
             // 
-            // label1
+            // lblIn
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 17);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(59, 12);
-            this.label1.TabIndex = 15;
-            this.label1.Text = "你的昵称:";
+            this.lblIn.AutoSize = true;
+            this.lblIn.Location = new System.Drawing.Point(12, 17);
+            this.lblIn.Name = "lblIn";
+            this.lblIn.Size = new System.Drawing.Size(59, 12);
+            this.lblIn.TabIndex = 15;
+            this.lblIn.Text = "你的昵称:";
             // 
-            // txtNick
+            // txtIn
             // 
-            this.txtNick.Location = new System.Drawing.Point(67, 14);
-            this.txtNick.Name = "txtNick";
-            this.txtNick.Size = new System.Drawing.Size(98, 21);
-            this.txtNick.TabIndex = 16;
+            this.txtIn.Location = new System.Drawing.Point(77, 14);
+            this.txtIn.Name = "txtIn";
+            this.txtIn.Size = new System.Drawing.Size(109, 21);
+            this.txtIn.TabIndex = 16;
             // 
-            // btnCreateUser
+            // btnIn
             // 
-            this.btnCreateUser.Location = new System.Drawing.Point(389, 43);
-            this.btnCreateUser.Name = "btnCreateUser";
-            this.btnCreateUser.Size = new System.Drawing.Size(75, 23);
-            this.btnCreateUser.TabIndex = 17;
-            this.btnCreateUser.Text = "createUser";
-            this.btnCreateUser.UseVisualStyleBackColor = true;
-            this.btnCreateUser.Click += new System.EventHandler(this.btnCreateUser_Click);
+            this.btnIn.Location = new System.Drawing.Point(192, 12);
+            this.btnIn.Name = "btnIn";
+            this.btnIn.Size = new System.Drawing.Size(75, 23);
+            this.btnIn.TabIndex = 17;
+            this.btnIn.Text = "createUser";
+            this.btnIn.UseVisualStyleBackColor = true;
+            this.btnIn.Click += new System.EventHandler(this.btnCreateUser_Click);
             // 
-            // label2
+            // radioLogin
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 48);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(47, 12);
-            this.label2.TabIndex = 18;
-            this.label2.Text = "userId:";
+            this.radioLogin.AutoSize = true;
+            this.radioLogin.Checked = true;
+            this.radioLogin.Location = new System.Drawing.Point(274, 17);
+            this.radioLogin.Name = "radioLogin";
+            this.radioLogin.Size = new System.Drawing.Size(47, 16);
+            this.radioLogin.TabIndex = 18;
+            this.radioLogin.TabStop = true;
+            this.radioLogin.Text = "登陆";
+            this.radioLogin.UseVisualStyleBackColor = true;
+            this.radioLogin.CheckedChanged += new System.EventHandler(this.radioLogin_CheckedChanged);
             // 
-            // txtUserId
+            // radioSign
             // 
-            this.txtUserId.Location = new System.Drawing.Point(67, 45);
-            this.txtUserId.Name = "txtUserId";
-            this.txtUserId.Size = new System.Drawing.Size(98, 21);
-            this.txtUserId.TabIndex = 19;
+            this.radioSign.AutoSize = true;
+            this.radioSign.Location = new System.Drawing.Point(327, 17);
+            this.radioSign.Name = "radioSign";
+            this.radioSign.Size = new System.Drawing.Size(47, 16);
+            this.radioSign.TabIndex = 19;
+            this.radioSign.Text = "注册";
+            this.radioSign.UseVisualStyleBackColor = true;
+            this.radioSign.CheckedChanged += new System.EventHandler(this.radioSign_CheckedChanged);
             // 
             // Form1
             // 
             this.AcceptButton = this.btnSend;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(847, 436);
-            this.Controls.Add(this.txtUserId);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.btnCreateUser);
-            this.Controls.Add(this.txtNick);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(847, 466);
+            this.Controls.Add(this.radioSign);
+            this.Controls.Add(this.radioLogin);
+            this.Controls.Add(this.btnIn);
+            this.Controls.Add(this.txtIn);
+            this.Controls.Add(this.lblIn);
             this.Controls.Add(this.labTurn);
             this.Controls.Add(this.labPlayer2Socre);
             this.Controls.Add(this.labPlayer1Socre);
@@ -229,11 +208,9 @@
             this.Controls.Add(this.txtMsg);
             this.Controls.Add(this.lbInfo);
             this.Controls.Add(this.btnDisconnect);
-            this.Controls.Add(this.txtPort);
-            this.Controls.Add(this.txtIp);
-            this.Controls.Add(this.btnConnect);
             this.Name = "Form1";
             this.Text = "Victoriest";
+            this.Shown += new System.EventHandler(this.Form1_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -241,9 +218,6 @@
 
         #endregion
 
-        private System.Windows.Forms.Button btnConnect;
-        private System.Windows.Forms.TextBox txtIp;
-        private System.Windows.Forms.TextBox txtPort;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.ListBox lbInfo;
         private System.Windows.Forms.TextBox txtMsg;
@@ -254,11 +228,11 @@
         private System.Windows.Forms.Label labPlayer1Socre;
         private System.Windows.Forms.Label labPlayer2Socre;
         private System.Windows.Forms.Label labTurn;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox txtNick;
-        private System.Windows.Forms.Button btnCreateUser;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox txtUserId;
+        private System.Windows.Forms.Label lblIn;
+        private System.Windows.Forms.TextBox txtIn;
+        private System.Windows.Forms.Button btnIn;
+        private System.Windows.Forms.RadioButton radioLogin;
+        private System.Windows.Forms.RadioButton radioSign;
     }
 }
 

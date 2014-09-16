@@ -9,7 +9,6 @@ import (
 )
 
 func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
-
 	createUserDto := &protocol.CreateUserDTO{}
 	proto.Unmarshal(message.Message, createUserDto)
 
@@ -27,7 +26,6 @@ func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.Mobile
 	createResult := &protocol.CreateResultDTO{
 		UserId: proto.Int64(int64(result)),
 	}
-	log.Info(result)
 	byt, _ := proto.Marshal(createResult)
 
 	lpDtoMsg := &protocol.MobileSuiteModel{
@@ -35,12 +33,10 @@ func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.Mobile
 		Message: byt,
 	}
 	server.SendTo(ipStr, lpDtoMsg)
-	log.Info(createUserDto.Name)
 
 }
 
 func procerssLogin(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
-	to := inGameMap[ipStr]
 	loginDto := &protocol.LoginDTO{}
 	proto.Unmarshal(message.Message, loginDto)
 
@@ -58,10 +54,10 @@ func procerssLogin(server *sev.Nexus, ipStr string, message *protocol.MobileSuit
 
 	byt, _ := proto.Marshal(loginResultDto)
 	lpDtoMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LOGIN_RES)),
-		Message: byt,
+		Type: proto.Int32(int32(protocol.MessageType_MSG_TYPE_LOGIN_RES)),
 	}
-
-	server.SendTo(to, lpDtoMsg)
-
+	if len(byt) > 0 {
+		lpDtoMsg.Message = byt
+	}
+	server.SendTo(ipStr, lpDtoMsg)
 }

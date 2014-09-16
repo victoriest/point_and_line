@@ -1,5 +1,7 @@
-﻿using System;
+﻿using protocol;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -85,6 +87,34 @@ namespace connectToGoServer
             return true;
         }
 
+        public void SendMessage<T>(int messageType, T dto) 
+        {
+            MobileSuiteModel msm = new MobileSuiteModel();
+            msm.type = messageType;
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize<T>(ms, dto);
+                msm.message = ms.ToArray();
+                ms.Close();
+            }
+            byte[] bytes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize(ms, msm);
+                bytes = ms.ToArray();
+                ms.Close();
+            }
+
+            int length = bytes.Length;
+            byte[] data = new byte[length + 4];
+            byte[] lengthBytes = BitConverter.GetBytes(length);
+            Array.Copy(lengthBytes, data, 4);
+            Array.Copy(bytes, 0, data, 4, length);
+
+            SendMessage(data);
+        }
+
         public void SendMessage(byte[] data)
         {
             if (socket == null) return;
@@ -127,7 +157,7 @@ namespace connectToGoServer
                 byte[] data = new byte[BuffLength];
                 socket.BeginReceive(data, 0, data.Length, SocketFlags.None, out socketError, ReceivedResult, data);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (socket != null)
                 {

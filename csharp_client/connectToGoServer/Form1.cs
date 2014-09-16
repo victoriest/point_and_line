@@ -26,6 +26,14 @@ namespace connectToGoServer
 
         private string opptNick = "";
 
+        private string serverIp = "127.0.0.1";
+
+        private int serverPort = 8990;
+
+        private LoginResultDTO playerInfo;
+
+        private LoginResultDTO opptInfo;
+
         public delegate void startNewGameDelegate();
         public startNewGameDelegate start;
 
@@ -45,25 +53,25 @@ namespace connectToGoServer
         private void ConnectedCallBack(IAsyncResult ar)
         {
             lbInfo.Items.Add("connected");
-            EnableGameUI(true);
         }
 
         private void DisconnectedCallBack()
         {
             lbInfo.Items.Add("disconnected");
             EnableGameUI(false);
+            this.Close();
         }
 
         private void EnableGameUI(bool enable) {
-            txtNick.Enabled = !enable;
-            txtIp.Enabled = !enable;
-            txtPort.Enabled = !enable;
-            btnConnect.Enabled = !enable;
-
-            btnDisconnect.Enabled = enable;
+            //txtNick.Enabled = !enable;
             txtMsg.Enabled = enable;
             btnSend.Enabled = enable;
             btnStart.Enabled = enable;
+
+            txtIn.Enabled = !enable;
+            btnIn.Enabled = !enable;
+            radioSign.Enabled = !enable;
+            radioLogin.Enabled = !enable;
         }
 
         private void RecivedMessage(byte[] data)
@@ -76,11 +84,23 @@ namespace connectToGoServer
             MobileSuiteModel msm = ProtoBuf.Serializer.Deserialize<MobileSuiteModel>(stream);
             switch (msm.type) 
             {
+                case (int)MessageType.MSG_TYPE_LOGIN_RES:
+                    if (msm.message == null)
+                    {
+                        MessageBox.Show("无此用户");
+                        return;
+                    }
+                    stream = new MemoryStream(msm.message);
+                    LoginResultDTO loginResult = ProtoBuf.Serializer.Deserialize<LoginResultDTO>(stream);
+                    txtIn.Text = loginResult.name;
+                    playerInfo = loginResult;
+                    EnableGameUI(true);
+                    break;
                 case (int)MessageType.MSG_TYPE_CREATE_USER_RES:
                     stream = new MemoryStream(msm.message);
                     CreateResultDTO createResult = ProtoBuf.Serializer.Deserialize<CreateResultDTO>(stream);
                     lbInfo.Items.Add(createResult.userId);
-                    txtUserId.Text = createResult.userId.ToString();
+                    txtIn.Text = createResult.userId.ToString();
                     break;
                 case (int)MessageType.MSG_TYPE_CHAT_MESSGAE:
                     stream = new MemoryStream(msm.message);
@@ -133,11 +153,6 @@ namespace connectToGoServer
             }
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
-        {
-            connector.InitSocket(txtIp.Text, Int32.Parse(txtPort.Text));
-        }
-
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             connector.CloseConnect();
@@ -145,33 +160,9 @@ namespace connectToGoServer
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            MobileSuiteModel msm = new MobileSuiteModel();
-            msm.type = (int)MessageType.MSG_TYPE_CHAT_MESSGAE;
-
             ChatMsg chat = new ChatMsg();
             chat.chatContext = txtMsg.Text;
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ProtoBuf.Serializer.Serialize<ChatMsg>(ms, chat);
-                msm.message = ms.ToArray();
-                ms.Close();
-            }
-            byte[] bytes;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ProtoBuf.Serializer.Serialize(ms, msm);
-                bytes = ms.ToArray();
-                ms.Close();
-            }
-
-            int length = bytes.Length;
-            byte[] data = new byte[length + 4];
-            byte[] lengthBytes = BitConverter.GetBytes(length);
-            Array.Copy(lengthBytes, data, 4);
-            Array.Copy(bytes, 0, data, 4, length);
-
-            connector.SendMessage(data);
+            connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_CHAT_MESSGAE, chat);
         }
 
         private void btnClick(object sender, System.EventArgs e)
@@ -207,35 +198,11 @@ namespace connectToGoServer
 
             if (result == 0)
             {
-                MobileSuiteModel msm = new MobileSuiteModel();
-                msm.type = (int)MessageType.MSG_TYPE_LINE_A_POINT_REQ;
-
                 LineAPointDTO lpDto = new LineAPointDTO();
                 lpDto.row = Int32.Parse(arr[0]);
                 lpDto.col = Int32.Parse(arr[1]);
                 lpDto.playerIndex = playerIndex;
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    ProtoBuf.Serializer.Serialize<LineAPointDTO>(ms, lpDto);
-                    msm.message = ms.ToArray();
-                    ms.Close();
-                }
-                byte[] bytes;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    ProtoBuf.Serializer.Serialize(ms, msm);
-                    bytes = ms.ToArray();
-                    ms.Close();
-                }
-
-                int length = bytes.Length;
-                byte[] data = new byte[length + 4];
-                byte[] lengthBytes = BitConverter.GetBytes(length);
-                Array.Copy(lengthBytes, data, 4);
-                Array.Copy(bytes, 0, data, 4, length);
-
-                connector.SendMessage(data);
+                connector.SendMessage<LineAPointDTO>((int)MessageType.MSG_TYPE_LINE_A_POINT_REQ, lpDto);
             }
             
             updateState();
@@ -324,64 +291,57 @@ namespace connectToGoServer
             playerIndex = 0;
             opptNick = "";
 
-            MobileSuiteModel msm = new MobileSuiteModel();
-            msm.type = (int)MessageType.MSG_TYPE_SEARCH_A_GAME_REQ;
-
             ChatMsg chat = new ChatMsg();
-            chat.chatContext = txtNick.Text;
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ProtoBuf.Serializer.Serialize<ChatMsg>(ms, chat);
-                msm.message = ms.ToArray();
-                ms.Close();
-            }
-            byte[] bytes;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ProtoBuf.Serializer.Serialize(ms, msm);
-                bytes = ms.ToArray();
-                ms.Close();
-            }
-
-            int length = bytes.Length;
-            byte[] data = new byte[length + 4];
-            byte[] lengthBytes = BitConverter.GetBytes(length);
-            Array.Copy(lengthBytes, data, 4);
-            Array.Copy(bytes, 0, data, 4, length);
-
-            connector.SendMessage(data);
+            chat.chatContext = txtIn.Text;
+            connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_SEARCH_A_GAME_REQ, chat);
         }
 
         private void btnCreateUser_Click(object sender, EventArgs e)
         {
-            MobileSuiteModel msm = new MobileSuiteModel();
-            msm.type = (int)MessageType.MSG_TYPE_CREATE_USER_REQ;
-
-            CreateUserDTO dto = new CreateUserDTO();
-            dto.name = txtNick.Text;
-
-            using (MemoryStream ms = new MemoryStream())
+            if (radioSign.Checked)
             {
-                ProtoBuf.Serializer.Serialize<CreateUserDTO>(ms, dto);
-                msm.message = ms.ToArray();
-                ms.Close();
+                CreateUserDTO dto = new CreateUserDTO();
+                dto.name = txtIn.Text;
+                connector.SendMessage<CreateUserDTO>((int)MessageType.MSG_TYPE_CREATE_USER_REQ, dto);
             }
-            byte[] bytes;
-            using (MemoryStream ms = new MemoryStream())
+            else if (radioLogin.Checked)
             {
-                ProtoBuf.Serializer.Serialize(ms, msm);
-                bytes = ms.ToArray();
-                ms.Close();
+                LoginDTO dto = new LoginDTO();
+                dto.userId = long.Parse(txtIn.Text);
+                connector.SendMessage<LoginDTO>((int)MessageType.MSG_TYPE_LOGIN_REQ, dto);
             }
+        }
 
-            int length = bytes.Length;
-            byte[] data = new byte[length + 4];
-            byte[] lengthBytes = BitConverter.GetBytes(length);
-            Array.Copy(lengthBytes, data, 4);
-            Array.Copy(bytes, 0, data, 4, length);
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            EnableGameUI(false);
+            connector.InitSocket(serverIp, serverPort);
+            lbInfo.Items.Add("connecting...");
+            radioCheck();
+        }
 
-            connector.SendMessage(data);
+        private void radioLogin_CheckedChanged(object sender, EventArgs e)
+        {
+            radioCheck();
+        }
+
+        private void radioSign_CheckedChanged(object sender, EventArgs e)
+        {
+            radioCheck();
+        }
+
+        private void radioCheck() 
+        {
+            if (radioLogin.Checked)
+            {
+                lblIn.Text = "登陆id:";
+                btnIn.Text = "登陆";
+            }
+            else if (radioSign.Checked)
+            {
+                lblIn.Text = "注册昵称:";
+                btnIn.Text = "注册";
+            }
         }
     }
 }
