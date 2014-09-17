@@ -61,20 +61,20 @@
             this.lbInfo.ItemHeight = 12;
             this.lbInfo.Location = new System.Drawing.Point(14, 44);
             this.lbInfo.Name = "lbInfo";
-            this.lbInfo.Size = new System.Drawing.Size(470, 376);
+            this.lbInfo.Size = new System.Drawing.Size(468, 376);
             this.lbInfo.TabIndex = 6;
             // 
             // txtMsg
             // 
-            this.txtMsg.Location = new System.Drawing.Point(14, 433);
+            this.txtMsg.Location = new System.Drawing.Point(23, 433);
             this.txtMsg.Name = "txtMsg";
-            this.txtMsg.Size = new System.Drawing.Size(391, 21);
+            this.txtMsg.Size = new System.Drawing.Size(378, 21);
             this.txtMsg.TabIndex = 7;
             this.txtMsg.Text = "hello wrold";
             // 
             // btnSend
             // 
-            this.btnSend.Location = new System.Drawing.Point(411, 431);
+            this.btnSend.Location = new System.Drawing.Point(407, 431);
             this.btnSend.Name = "btnSend";
             this.btnSend.Size = new System.Drawing.Size(75, 23);
             this.btnSend.TabIndex = 8;
@@ -150,12 +150,12 @@
             // 
             this.txtIn.Location = new System.Drawing.Point(77, 14);
             this.txtIn.Name = "txtIn";
-            this.txtIn.Size = new System.Drawing.Size(109, 21);
+            this.txtIn.Size = new System.Drawing.Size(131, 21);
             this.txtIn.TabIndex = 16;
             // 
             // btnIn
             // 
-            this.btnIn.Location = new System.Drawing.Point(192, 12);
+            this.btnIn.Location = new System.Drawing.Point(214, 12);
             this.btnIn.Name = "btnIn";
             this.btnIn.Size = new System.Drawing.Size(75, 23);
             this.btnIn.TabIndex = 17;
@@ -167,7 +167,7 @@
             // 
             this.radioLogin.AutoSize = true;
             this.radioLogin.Checked = true;
-            this.radioLogin.Location = new System.Drawing.Point(274, 17);
+            this.radioLogin.Location = new System.Drawing.Point(382, 15);
             this.radioLogin.Name = "radioLogin";
             this.radioLogin.Size = new System.Drawing.Size(47, 16);
             this.radioLogin.TabIndex = 18;
@@ -179,7 +179,7 @@
             // radioSign
             // 
             this.radioSign.AutoSize = true;
-            this.radioSign.Location = new System.Drawing.Point(327, 17);
+            this.radioSign.Location = new System.Drawing.Point(435, 15);
             this.radioSign.Name = "radioSign";
             this.radioSign.Size = new System.Drawing.Size(47, 16);
             this.radioSign.TabIndex = 19;
