@@ -40,8 +40,29 @@ namespace protocol
   {
     public ChatMsg() {}
     
+    private int _chatType;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"chatType", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int chatType
+    {
+      get { return _chatType; }
+      set { _chatType = value; }
+    }
+    private long _userId;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"userId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public long userId
+    {
+      get { return _userId; }
+      set { _userId = value; }
+    }
+    private string _uName;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"uName", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string uName
+    {
+      get { return _uName; }
+      set { _uName = value; }
+    }
     private string _chatContext;
-    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"chatContext", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::ProtoBuf.ProtoMember(4, IsRequired = true, Name=@"chatContext", DataFormat = global::ProtoBuf.DataFormat.Default)]
     public string chatContext
     {
       get { return _chatContext; }
@@ -112,12 +133,19 @@ namespace protocol
   {
     public CreateUserDTO() {}
     
-    private string _name;
-    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"name", DataFormat = global::ProtoBuf.DataFormat.Default)]
-    public string name
+    private string _uName;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"uName", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string uName
     {
-      get { return _name; }
-      set { _name = value; }
+      get { return _uName; }
+      set { _uName = value; }
+    }
+    private string _pwd;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"pwd", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string pwd
+    {
+      get { return _pwd; }
+      set { _pwd = value; }
     }
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
@@ -153,6 +181,20 @@ namespace protocol
       get { return _userId; }
       set { _userId = value; }
     }
+    private string _uName;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"uName", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string uName
+    {
+      get { return _uName; }
+      set { _uName = value; }
+    }
+    private string _pwd;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"pwd", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string pwd
+    {
+      get { return _pwd; }
+      set { _pwd = value; }
+    }
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
@@ -170,33 +212,33 @@ namespace protocol
       get { return _userId; }
       set { _userId = value; }
     }
-    private string _name;
-    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"name", DataFormat = global::ProtoBuf.DataFormat.Default)]
-    public string name
+    private string _uName;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"uName", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string uName
     {
-      get { return _name; }
-      set { _name = value; }
+      get { return _uName; }
+      set { _uName = value; }
     }
-    private int _Round;
-    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"Round", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public int Round
+    private int _round;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"round", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int round
     {
-      get { return _Round; }
-      set { _Round = value; }
+      get { return _round; }
+      set { _round = value; }
     }
-    private int _WinCount;
-    [global::ProtoBuf.ProtoMember(4, IsRequired = true, Name=@"WinCount", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public int WinCount
+    private int _winCount;
+    [global::ProtoBuf.ProtoMember(4, IsRequired = true, Name=@"winCount", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int winCount
     {
-      get { return _WinCount; }
-      set { _WinCount = value; }
+      get { return _winCount; }
+      set { _winCount = value; }
     }
-    private int _Rank;
-    [global::ProtoBuf.ProtoMember(5, IsRequired = true, Name=@"Rank", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
-    public int Rank
+    private int _rank;
+    [global::ProtoBuf.ProtoMember(5, IsRequired = true, Name=@"rank", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int rank
     {
-      get { return _Rank; }
-      set { _Rank = value; }
+      get { return _rank; }
+      set { _rank = value; }
     }
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
@@ -224,8 +266,11 @@ namespace protocol
     public enum MessageType
     {
             
-      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_CHAT_MESSGAE", Value=1)]
-      MSG_TYPE_CHAT_MESSGAE = 1,
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_CHAT_MESSGAE_REQ", Value=1)]
+      MSG_TYPE_CHAT_MESSGAE_REQ = 1,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_CHAT_MESSAGE_RES", Value=2)]
+      MSG_TYPE_CHAT_MESSAGE_RES = 2,
             
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_SEARCH_A_GAME_REQ", Value=3)]
       MSG_TYPE_SEARCH_A_GAME_REQ = 3,
@@ -261,7 +306,13 @@ namespace protocol
       MSG_TYPE_LOGIN_REQ = 103,
             
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LOGIN_RES", Value=104)]
-      MSG_TYPE_LOGIN_RES = 104
+      MSG_TYPE_LOGIN_RES = 104,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LOGOUT_REQ", Value=105)]
+      MSG_TYPE_LOGOUT_REQ = 105,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LOGOUT_RES", Value=106)]
+      MSG_TYPE_LOGOUT_RES = 106
     }
   
 }

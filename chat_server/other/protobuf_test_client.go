@@ -14,20 +14,20 @@ import (
 var quitSp chan bool
 
 func main() {
-	strAddr := "127.0.0.1" + ":" + "9596"
-	tcpAddr, _ := net.ResolveTCPAddr("tcp", strAddr)
+	//strAddr := "127.0.0.1" + ":" + "9596"
+	//tcpAddr, _ := net.ResolveTCPAddr("tcp", strAddr)
 
-	quitSp = make(chan bool)
+	//quitSp = make(chan bool)
 
-	conn, _ := net.DialTCP("tcp", nil, tcpAddr)
-	defer conn.Close()
+	//conn, _ := net.DialTCP("tcp", nil, tcpAddr)
+	//defer conn.Close()
 
-	fmt.Println("connecting ", conn.RemoteAddr().String(), "...")
+	//fmt.Println("connecting ", conn.RemoteAddr().String(), "...")
 
-	go readerPipe(conn)
-	go writerPipe(conn)
+	//go readerPipe(conn)
+	//go writerPipe(conn)
 
-	<-quitSp
+	//<-quitSp
 }
 
 func writerPipe(conn *net.TCPConn) {

@@ -34,10 +34,26 @@ type Nexus struct {
 	newConnectionHandler ConnectionHandler       // 新连接处理Handler
 	disconnectHandler    ConnectionHandler       // 断开连接处理Handler
 	probe                codec.ProtobufProbe     // 序列化接口
-	DbConnector          *dao.MysqlConnector
+	DbConnector          *dao.MysqlConnector     // 数据库连接器
 }
 
-func NewNexus(port string, handler MessageRecivedHandler, connHander ConnectionHandler, disconnHander ConnectionHandler, dbCon *dao.MysqlConnector) *Nexus {
+//func NewNexus(port string, handler MessageRecivedHandler,
+//	connHander ConnectionHandler,
+//	disconnHander ConnectionHandler) *Nexus {
+//	nexus := new(Nexus)
+//	nexus.port = port
+//	nexus.connMap = make(map[string]*net.TCPConn)
+//	nexus.quitSemaphore = make(chan bool)
+//	nexus.recivedHandler = handler
+//	nexus.newConnectionHandler = connHander
+//	nexus.disconnectHandler = disconnHander
+//	nexus.probe = *new(codec.ProtobufProbe)
+//	return nexus
+//}
+
+func NewNexus(port string, handler MessageRecivedHandler,
+	connHander ConnectionHandler, disconnHander ConnectionHandler,
+	dbCon *dao.MysqlConnector) *Nexus {
 	nexus := new(Nexus)
 	nexus.port = port
 	nexus.connMap = make(map[string]*net.TCPConn)

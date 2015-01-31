@@ -4,9 +4,9 @@ import (
 	"../protocol"
 	"bufio"
 	"bytes"
-	proto "code.google.com/p/goprotobuf/proto"
 	log "code.google.com/p/log4go"
 	"encoding/binary"
+	proto "github.com/golang/protobuf/proto"
 )
 
 type ProtobufProbe struct{}

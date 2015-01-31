@@ -6,4 +6,5 @@ type User struct {
 	Round    int
 	WinCount int
 	Rank     int
+	Pwd      string
 }

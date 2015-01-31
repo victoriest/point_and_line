@@ -2,12 +2,13 @@
 package main
 
 import (
-	"./dao"
-	"./goconfig"
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"strconv"
+
+	"./dao"
+	"./goconfig"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -18,9 +19,9 @@ func main() {
 
 func testConnector() {
 	connection := new(dao.MysqlConnector)
-	ip := "192.168.1.11"
-	account := "victoriest"
-	pwd := "rockfrog"
+	ip := "127.0.0.1"
+	account := "root"
+	pwd := "estest"
 	schame := "point_and_line"
 	connection.Connect(&ip, 3306, &account, &pwd, &schame)
 	// user := new(dao.User)

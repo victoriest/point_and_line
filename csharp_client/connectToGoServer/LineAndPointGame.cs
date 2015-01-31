@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace connectToGoServer
 {
@@ -76,7 +77,7 @@ namespace connectToGoServer
                     var bottomBottom = ((int[])gameSteps[rowIndex + 2])[colIndex];
                     var bottomLeft = ((int[])gameSteps[rowIndex + 1])[colIndex];
                     var bottomRight = ((int[])gameSteps[rowIndex + 1])[colIndex + 1];
-                    if (bottomBottom != 0 && bottomLeft != 0 && bottomRight != 0)
+                    if (bottomBottom != 0 && bottomLeft != 0 && bottomRight != 0 && bottomBottom == bottomLeft && bottomLeft == bottomRight && whosTurn == bottomRight)
                     {
                         plusSorce(playerId);
                         isSorce = true;
@@ -88,7 +89,7 @@ namespace connectToGoServer
                     var topLeft = ((int[])gameSteps[rowIndex - 1])[colIndex];
                     var topTop = ((int[])gameSteps[rowIndex - 2])[colIndex];
                     var topRight = ((int[])gameSteps[rowIndex - 1])[colIndex + 1];
-                    if (topLeft != 0 && topTop != 0 && topRight != 0)
+                    if (topLeft != 0 && topTop != 0 && topRight != 0 && topLeft == topTop && topTop == topRight && whosTurn == topRight)
                     {
                         plusSorce(playerId);
                         isSorce = true;
@@ -104,7 +105,7 @@ namespace connectToGoServer
                     var leftLeft = ((int[])gameSteps[rowIndex])[colIndex - 1];
                     var leftTop = ((int[])gameSteps[rowIndex - 1])[colIndex - 1];
                     var leftBottom = ((int[])gameSteps[rowIndex + 1])[colIndex - 1];
-                    if (leftLeft != 0 && leftTop != 0 && leftBottom != 0)
+                    if (leftLeft != 0 && leftTop != 0 && leftBottom != 0 && leftLeft == leftTop && leftTop == leftBottom && whosTurn == leftBottom)
                     {
                         plusSorce(playerId);
                         isSorce = true;
@@ -113,10 +114,10 @@ namespace connectToGoServer
                 if (colIndex + 1 < ((int[])gameSteps[rowIndex]).Length)
                 {
                     // 右边的方块
-                    var rightRight = ((int[])gameSteps[rowIndex])[colIndex];
+                    var rightRight = ((int[])gameSteps[rowIndex])[colIndex + 1];
                     var rightTop = ((int[])gameSteps[rowIndex - 1])[colIndex];
                     var rightBottom = ((int[])gameSteps[rowIndex + 1])[colIndex];
-                    if (rightRight != 0 && rightTop != 0 && rightBottom != 0)
+                    if (rightRight != 0 && rightTop != 0 && rightBottom != 0 && rightRight == rightTop && rightTop == rightBottom && whosTurn == rightBottom)
                     {
                         plusSorce(playerId);
                         isSorce = true;

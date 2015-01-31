@@ -3,9 +3,9 @@ package logic
 import (
 	"../protocol"
 	sev "../server"
-	proto "code.google.com/p/goprotobuf/proto"
 	log "code.google.com/p/log4go"
 	"container/list"
+	proto "github.com/golang/protobuf/proto"
 	"net"
 )
 
@@ -19,7 +19,7 @@ var joinGameList = list.New()
 func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
 	log.Debug(message)
 	switch int32(*message.Type) {
-	case int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE):
+	case int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE_REQ):
 		server.BroadcastMessage(message)
 	case int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_REQ):
 		processLinePoint(server, ipStr, message)
@@ -38,7 +38,7 @@ func ConnectedHandler(server *sev.Nexus, conn *net.TCPConn) {
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
 	byt, _ := proto.Marshal(chatMsg)
 	broMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE)),
+		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES)),
 		Message: byt,
 	}
 	server.BroadcastMessage(broMsg)
@@ -50,7 +50,7 @@ func DisconnectingHander(server *sev.Nexus, conn *net.TCPConn) {
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
 	byt, _ := proto.Marshal(chatMsg)
 	broMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE)),
+		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES)),
 		Message: byt,
 	}
 	server.BroadcastMessage(broMsg)

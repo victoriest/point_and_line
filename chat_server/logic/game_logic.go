@@ -3,8 +3,8 @@ package logic
 import (
 	"../protocol"
 	sev "../server"
-	proto "code.google.com/p/goprotobuf/proto"
 	log "code.google.com/p/log4go"
+	proto "github.com/golang/protobuf/proto"
 )
 
 func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {

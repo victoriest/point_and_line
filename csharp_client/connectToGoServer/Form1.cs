@@ -26,6 +26,7 @@ namespace connectToGoServer
 
         private string opptNick = "";
 
+        //private string serverIp = "115.159.40.89";
         private string serverIp = "127.0.0.1";
 
         private int serverPort = 8990;
@@ -92,7 +93,7 @@ namespace connectToGoServer
                     }
                     stream = new MemoryStream(msm.message);
                     LoginResultDTO loginResult = ProtoBuf.Serializer.Deserialize<LoginResultDTO>(stream);
-                    txtIn.Text = loginResult.name;
+                    txtIn.Text = loginResult.uName;
                     playerInfo = loginResult;
                     EnableGameUI(true);
                     break;
@@ -102,7 +103,7 @@ namespace connectToGoServer
                     lbInfo.Items.Add(createResult.userId);
                     txtIn.Text = createResult.userId.ToString();
                     break;
-                case (int)MessageType.MSG_TYPE_CHAT_MESSGAE:
+                case (int)MessageType.MSG_TYPE_CHAT_MESSAGE_RES:
                     stream = new MemoryStream(msm.message);
                     ChatMsg chat = ProtoBuf.Serializer.Deserialize<ChatMsg>(stream);
                     lbInfo.Items.Add(chat.chatContext);
@@ -162,7 +163,7 @@ namespace connectToGoServer
         {
             ChatMsg chat = new ChatMsg();
             chat.chatContext = txtMsg.Text;
-            connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_CHAT_MESSGAE, chat);
+            connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_CHAT_MESSGAE_REQ, chat);
         }
 
         private void btnClick(object sender, System.EventArgs e)
@@ -301,7 +302,7 @@ namespace connectToGoServer
             if (radioSign.Checked)
             {
                 CreateUserDTO dto = new CreateUserDTO();
-                dto.name = txtIn.Text;
+                dto.uName = txtIn.Text;
                 connector.SendMessage<CreateUserDTO>((int)MessageType.MSG_TYPE_CREATE_USER_REQ, dto);
             }
             else if (radioLogin.Checked)

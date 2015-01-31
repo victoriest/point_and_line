@@ -21,7 +21,7 @@ It has these top-level messages:
 */
 package protocol
 
-import proto "code.google.com/p/goprotobuf/proto"
+import proto "github.com/golang/protobuf/proto"
 import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -31,7 +31,8 @@ var _ = math.Inf
 type MessageType int32
 
 const (
-	MessageType_MSG_TYPE_CHAT_MESSGAE      MessageType = 1
+	MessageType_MSG_TYPE_CHAT_MESSGAE_REQ  MessageType = 1
+	MessageType_MSG_TYPE_CHAT_MESSAGE_RES  MessageType = 2
 	MessageType_MSG_TYPE_SEARCH_A_GAME_REQ MessageType = 3
 	MessageType_MSG_TYPE_SEARCH_A_GAME_RES MessageType = 4
 	MessageType_MSG_TYPE_STOP_SEARCH_REQ   MessageType = 5
@@ -44,10 +45,13 @@ const (
 	MessageType_MSG_TYPE_CREATE_USER_RES   MessageType = 102
 	MessageType_MSG_TYPE_LOGIN_REQ         MessageType = 103
 	MessageType_MSG_TYPE_LOGIN_RES         MessageType = 104
+	MessageType_MSG_TYPE_LOGOUT_REQ        MessageType = 105
+	MessageType_MSG_TYPE_LOGOUT_RES        MessageType = 106
 )
 
 var MessageType_name = map[int32]string{
-	1:   "MSG_TYPE_CHAT_MESSGAE",
+	1:   "MSG_TYPE_CHAT_MESSGAE_REQ",
+	2:   "MSG_TYPE_CHAT_MESSAGE_RES",
 	3:   "MSG_TYPE_SEARCH_A_GAME_REQ",
 	4:   "MSG_TYPE_SEARCH_A_GAME_RES",
 	5:   "MSG_TYPE_STOP_SEARCH_REQ",
@@ -60,9 +64,12 @@ var MessageType_name = map[int32]string{
 	102: "MSG_TYPE_CREATE_USER_RES",
 	103: "MSG_TYPE_LOGIN_REQ",
 	104: "MSG_TYPE_LOGIN_RES",
+	105: "MSG_TYPE_LOGOUT_REQ",
+	106: "MSG_TYPE_LOGOUT_RES",
 }
 var MessageType_value = map[string]int32{
-	"MSG_TYPE_CHAT_MESSGAE":      1,
+	"MSG_TYPE_CHAT_MESSGAE_REQ":  1,
+	"MSG_TYPE_CHAT_MESSAGE_RES":  2,
 	"MSG_TYPE_SEARCH_A_GAME_REQ": 3,
 	"MSG_TYPE_SEARCH_A_GAME_RES": 4,
 	"MSG_TYPE_STOP_SEARCH_REQ":   5,
@@ -75,6 +82,8 @@ var MessageType_value = map[string]int32{
 	"MSG_TYPE_CREATE_USER_RES":   102,
 	"MSG_TYPE_LOGIN_REQ":         103,
 	"MSG_TYPE_LOGIN_RES":         104,
+	"MSG_TYPE_LOGOUT_REQ":        105,
+	"MSG_TYPE_LOGOUT_RES":        106,
 }
 
 func (x MessageType) Enum() *MessageType {
@@ -118,14 +127,39 @@ func (m *MobileSuiteModel) GetMessage() []byte {
 	return nil
 }
 
+// 聊天信息对应消息体
 type ChatMsg struct {
-	ChatContext      *string `protobuf:"bytes,1,req,name=chatContext" json:"chatContext,omitempty"`
+	ChatType         *int32  `protobuf:"varint,1,req,name=chatType" json:"chatType,omitempty"`
+	UserId           *int64  `protobuf:"varint,2,req,name=userId" json:"userId,omitempty"`
+	UName            *string `protobuf:"bytes,3,req,name=uName" json:"uName,omitempty"`
+	ChatContext      *string `protobuf:"bytes,4,req,name=chatContext" json:"chatContext,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
 func (m *ChatMsg) Reset()         { *m = ChatMsg{} }
 func (m *ChatMsg) String() string { return proto.CompactTextString(m) }
 func (*ChatMsg) ProtoMessage()    {}
+
+func (m *ChatMsg) GetChatType() int32 {
+	if m != nil && m.ChatType != nil {
+		return *m.ChatType
+	}
+	return 0
+}
+
+func (m *ChatMsg) GetUserId() int64 {
+	if m != nil && m.UserId != nil {
+		return *m.UserId
+	}
+	return 0
+}
+
+func (m *ChatMsg) GetUName() string {
+	if m != nil && m.UName != nil {
+		return *m.UName
+	}
+	return ""
+}
 
 func (m *ChatMsg) GetChatContext() string {
 	if m != nil && m.ChatContext != nil {
@@ -134,6 +168,7 @@ func (m *ChatMsg) GetChatContext() string {
 	return ""
 }
 
+// 开始游戏的信息消息体
 type GameStartDTO struct {
 	OpptName         *string `protobuf:"bytes,1,req,name=opptName" json:"opptName,omitempty"`
 	PlayerIndex      *int32  `protobuf:"varint,2,req,name=playerIndex" json:"playerIndex,omitempty"`
@@ -158,6 +193,7 @@ func (m *GameStartDTO) GetPlayerIndex() int32 {
 	return 0
 }
 
+// 连一个线
 type LineAPointDTO struct {
 	Row              *int32 `protobuf:"varint,1,req,name=row" json:"row,omitempty"`
 	Col              *int32 `protobuf:"varint,2,req,name=col" json:"col,omitempty"`
@@ -190,8 +226,10 @@ func (m *LineAPointDTO) GetPlayerIndex() int32 {
 	return 0
 }
 
+// 创建角色
 type CreateUserDTO struct {
-	Name             *string `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
+	UName            *string `protobuf:"bytes,1,req,name=uName" json:"uName,omitempty"`
+	Pwd              *string `protobuf:"bytes,2,req,name=pwd" json:"pwd,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -199,13 +237,21 @@ func (m *CreateUserDTO) Reset()         { *m = CreateUserDTO{} }
 func (m *CreateUserDTO) String() string { return proto.CompactTextString(m) }
 func (*CreateUserDTO) ProtoMessage()    {}
 
-func (m *CreateUserDTO) GetName() string {
-	if m != nil && m.Name != nil {
-		return *m.Name
+func (m *CreateUserDTO) GetUName() string {
+	if m != nil && m.UName != nil {
+		return *m.UName
 	}
 	return ""
 }
 
+func (m *CreateUserDTO) GetPwd() string {
+	if m != nil && m.Pwd != nil {
+		return *m.Pwd
+	}
+	return ""
+}
+
+// 创建角色返回
 type CreateResultDTO struct {
 	UserId           *int64 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
@@ -222,9 +268,12 @@ func (m *CreateResultDTO) GetUserId() int64 {
 	return 0
 }
 
+// 登陆
 type LoginDTO struct {
-	UserId           *int64 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
-	XXX_unrecognized []byte `json:"-"`
+	UserId           *int64  `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
+	UName            *string `protobuf:"bytes,2,req,name=uName" json:"uName,omitempty"`
+	Pwd              *string `protobuf:"bytes,3,req,name=pwd" json:"pwd,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
 func (m *LoginDTO) Reset()         { *m = LoginDTO{} }
@@ -238,12 +287,27 @@ func (m *LoginDTO) GetUserId() int64 {
 	return 0
 }
 
+func (m *LoginDTO) GetUName() string {
+	if m != nil && m.UName != nil {
+		return *m.UName
+	}
+	return ""
+}
+
+func (m *LoginDTO) GetPwd() string {
+	if m != nil && m.Pwd != nil {
+		return *m.Pwd
+	}
+	return ""
+}
+
+// 登陆返回
 type LoginResultDTO struct {
 	UserId           *int64  `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
-	Name             *string `protobuf:"bytes,2,req,name=name" json:"name,omitempty"`
-	Round            *int32  `protobuf:"varint,3,req" json:"Round,omitempty"`
-	WinCount         *int32  `protobuf:"varint,4,req" json:"WinCount,omitempty"`
-	Rank             *int32  `protobuf:"varint,5,req" json:"Rank,omitempty"`
+	UName            *string `protobuf:"bytes,2,req,name=uName" json:"uName,omitempty"`
+	Round            *int32  `protobuf:"varint,3,req,name=round" json:"round,omitempty"`
+	WinCount         *int32  `protobuf:"varint,4,req,name=winCount" json:"winCount,omitempty"`
+	Rank             *int32  `protobuf:"varint,5,req,name=rank" json:"rank,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -258,9 +322,9 @@ func (m *LoginResultDTO) GetUserId() int64 {
 	return 0
 }
 
-func (m *LoginResultDTO) GetName() string {
-	if m != nil && m.Name != nil {
-		return *m.Name
+func (m *LoginResultDTO) GetUName() string {
+	if m != nil && m.UName != nil {
+		return *m.UName
 	}
 	return ""
 }
@@ -286,6 +350,7 @@ func (m *LoginResultDTO) GetRank() int32 {
 	return 0
 }
 
+// 退出登陆
 type LogoutDTO struct {
 	UserId           *int64 `protobuf:"varint,1,req,name=userId" json:"userId,omitempty"`
 	XXX_unrecognized []byte `json:"-"`

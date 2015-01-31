@@ -17,9 +17,25 @@ func main() {
 	log.LoadConfiguration("./log4go.config")
 	port, ip, account, pwd, schame := readServerPort()
 	dbCon := new(dao.MysqlConnector)
-	dbCon.Connect(&ip, 3306, &account, &pwd, &schame)
-
-	server := sev.NewNexus(port, logic.TcpHandler, logic.ConnectedHandler, logic.DisconnectingHander, dbCon)
+	isConnect := dbCon.Connect(&ip, 3306, &account, &pwd, &schame)
+	if !isConnect {
+		log.Warn("mysql connect faild")
+		return
+	}
+	u := new(dao.User)
+	u.Id = 1
+	u.Name = "victoriest1"
+	u.Round = 0
+	u.WinCount = 0
+	u.Rank = 0
+	u.Pwd = "123"
+	_, err := dbCon.Insert(u)
+	if err != nil {
+		log.Warn(err)
+	}
+	server := sev.NewNexus(port, logic.TcpHandler,
+		logic.ConnectedHandler, logic.DisconnectingHander,
+		dbCon)
 	server.Startup()
 }
 
