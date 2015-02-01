@@ -80,13 +80,14 @@ func (self *MysqlConnector) QueryByUserId(userId int64) ([]User, error) {
 }
 
 // 根据用户名查询
-func (self *MysqlConnector) QueryByUserName(userName string) ([]User, error) {
+func (self *MysqlConnector) QueryByUserName(userName string,
+	pwd string) ([]User, error) {
 	err := self.connection.Ping()
 	if err != nil {
 		return nil, err
 	}
 	result, err := self.connection.Query("SELECT * FROM user WHERE uname='" +
-		userName + "'")
+		userName + "' AND pwd='" + pwd + "'")
 	defer result.Close()
 
 	users := []User{}

@@ -22,17 +22,6 @@ func main() {
 		log.Warn("mysql connect faild")
 		return
 	}
-	u := new(dao.User)
-	u.Id = 1
-	u.Name = "victoriest1"
-	u.Round = 0
-	u.WinCount = 0
-	u.Rank = 0
-	u.Pwd = "123"
-	_, err := dbCon.Insert(u)
-	if err != nil {
-		log.Warn(err)
-	}
 	server := sev.NewNexus(port, logic.TcpHandler,
 		logic.ConnectedHandler, logic.DisconnectingHander,
 		dbCon)

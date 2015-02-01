@@ -16,8 +16,6 @@ type INexus interface {
 	Startup()
 	// 关闭服务器
 	Shutdown()
-	// 重启服务器
-	// Restart()
 }
 
 // 消息处理托管
@@ -36,20 +34,6 @@ type Nexus struct {
 	probe                codec.ProtobufProbe     // 序列化接口
 	DbConnector          *dao.MysqlConnector     // 数据库连接器
 }
-
-//func NewNexus(port string, handler MessageRecivedHandler,
-//	connHander ConnectionHandler,
-//	disconnHander ConnectionHandler) *Nexus {
-//	nexus := new(Nexus)
-//	nexus.port = port
-//	nexus.connMap = make(map[string]*net.TCPConn)
-//	nexus.quitSemaphore = make(chan bool)
-//	nexus.recivedHandler = handler
-//	nexus.newConnectionHandler = connHander
-//	nexus.disconnectHandler = disconnHander
-//	nexus.probe = *new(codec.ProtobufProbe)
-//	return nexus
-//}
 
 func NewNexus(port string, handler MessageRecivedHandler,
 	connHander ConnectionHandler, disconnHander ConnectionHandler,

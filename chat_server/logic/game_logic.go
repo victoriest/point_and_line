@@ -62,3 +62,15 @@ func processSearchGame(server *sev.Nexus, ipStr string, message *protocol.Mobile
 		server.SendTo(strIp2, broMsg2)
 	}
 }
+
+func endGame(ipStr string) {
+	opptIpStr, hasKey := inGameMap[ipStr]
+	if !hasKey {
+		return
+	}
+	delete(ipMappingNick, opptIpStr)
+	delete(ipMappingNick, ipStr)
+	delete(inGameMap, opptIpStr)
+	delete(inGameMap, ipStr)
+
+}
