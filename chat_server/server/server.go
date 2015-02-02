@@ -141,3 +141,11 @@ func (self *Nexus) SendTo(sendTo string, message *protocol.MobileSuiteModel) {
 	buff, _ := self.probe.Serialize(message)
 	self.connMap[sendTo].Write(buff)
 }
+
+func (self *Nexus) ConnectionIsOpen(ipStr string) bool {
+	conn := self.connMap[ipStr]
+	if conn != nil {
+		return true
+	}
+	return false
+}

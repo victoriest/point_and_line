@@ -45,9 +45,23 @@ func DisconnectingHander(server *sev.Nexus, conn *net.TCPConn) {
 	str := "disconnected :" + ipStr
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
 	byt, _ := proto.Marshal(chatMsg)
-	endGame(ipStr)
+	endGame(server, ipStr)
 	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
-	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_LOGOUT_RES))
+
+}
+
+func endGame(server *sev.Nexus, ipStr string) {
+	opptIpStr, hasKey := inGameMap[ipStr]
+	if !hasKey {
+		return
+	}
+	logoutDto := &protocol.LogoutDTO{UserId: proto.Int64(1)}
+	byt, _ := proto.Marshal(logoutDto)
+	sendBack(server, opptIpStr, byt, int32(protocol.MessageType_MSG_TYPE_LOGOUT_RES))
+	delete(ipMappingNick, opptIpStr)
+	delete(ipMappingNick, ipStr)
+	delete(inGameMap, opptIpStr)
+	delete(inGameMap, ipStr)
 }
 
 func sendBack(server *sev.Nexus, ipStr string, byt []byte, msgType int32) {
