@@ -29,6 +29,8 @@ func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteMo
 		processCreateUser(server, ipStr, message)
 	case int32(protocol.MessageType_MSG_TYPE_LOGIN_REQ):
 		processLogin(server, ipStr, message)
+	case int32(protocol.MessageType_MSG_TYPE_END_GAME_REQ):
+		processEndGame(server, ipStr, message)
 	}
 }
 
@@ -57,7 +59,7 @@ func endGame(server *sev.Nexus, ipStr string) {
 	}
 	logoutDto := &protocol.LogoutDTO{UserId: proto.Int64(1)}
 	byt, _ := proto.Marshal(logoutDto)
-	sendBack(server, opptIpStr, byt, int32(protocol.MessageType_MSG_TYPE_LOGOUT_RES))
+	sendBack(server, opptIpStr, byt, int32(protocol.MessageType_MSG_TYPE_END_GAME_RES))
 	delete(ipMappingNick, opptIpStr)
 	delete(ipMappingNick, ipStr)
 	delete(inGameMap, opptIpStr)

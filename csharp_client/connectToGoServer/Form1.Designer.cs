@@ -43,6 +43,7 @@
             this.btnIn = new System.Windows.Forms.Button();
             this.radioLogin = new System.Windows.Forms.RadioButton();
             this.radioSign = new System.Windows.Forms.RadioButton();
+            this.txtPwd = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnDisconnect
@@ -187,12 +188,20 @@
             this.radioSign.UseVisualStyleBackColor = true;
             this.radioSign.CheckedChanged += new System.EventHandler(this.radioSign_CheckedChanged);
             // 
+            // txtPwd
+            // 
+            this.txtPwd.Location = new System.Drawing.Point(296, 14);
+            this.txtPwd.Name = "txtPwd";
+            this.txtPwd.Size = new System.Drawing.Size(80, 21);
+            this.txtPwd.TabIndex = 20;
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnSend;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(847, 466);
+            this.Controls.Add(this.txtPwd);
             this.Controls.Add(this.radioSign);
             this.Controls.Add(this.radioLogin);
             this.Controls.Add(this.btnIn);
@@ -233,6 +242,7 @@
         private System.Windows.Forms.Button btnIn;
         private System.Windows.Forms.RadioButton radioLogin;
         private System.Windows.Forms.RadioButton radioSign;
+        private System.Windows.Forms.TextBox txtPwd;
     }
 }
 

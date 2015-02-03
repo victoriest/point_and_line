@@ -41,6 +41,7 @@ const (
 	MessageType_MSG_TYPE_LINE_A_POINT_REQ  MessageType = 9
 	MessageType_MSG_TYPE_LINE_A_POINT_RES  MessageType = 10
 	MessageType_MSG_TYPE_END_GAME_REQ      MessageType = 11
+	MessageType_MSG_TYPE_END_GAME_RES      MessageType = 12
 	MessageType_MSG_TYPE_CREATE_USER_REQ   MessageType = 101
 	MessageType_MSG_TYPE_CREATE_USER_RES   MessageType = 102
 	MessageType_MSG_TYPE_LOGIN_REQ         MessageType = 103
@@ -60,6 +61,7 @@ var MessageType_name = map[int32]string{
 	9:   "MSG_TYPE_LINE_A_POINT_REQ",
 	10:  "MSG_TYPE_LINE_A_POINT_RES",
 	11:  "MSG_TYPE_END_GAME_REQ",
+	12:  "MSG_TYPE_END_GAME_RES",
 	101: "MSG_TYPE_CREATE_USER_REQ",
 	102: "MSG_TYPE_CREATE_USER_RES",
 	103: "MSG_TYPE_LOGIN_REQ",
@@ -78,6 +80,7 @@ var MessageType_value = map[string]int32{
 	"MSG_TYPE_LINE_A_POINT_REQ":  9,
 	"MSG_TYPE_LINE_A_POINT_RES":  10,
 	"MSG_TYPE_END_GAME_REQ":      11,
+	"MSG_TYPE_END_GAME_RES":      12,
 	"MSG_TYPE_CREATE_USER_REQ":   101,
 	"MSG_TYPE_CREATE_USER_RES":   102,
 	"MSG_TYPE_LOGIN_REQ":         103,

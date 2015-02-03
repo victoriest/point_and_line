@@ -52,7 +52,7 @@ func (self *MysqlConnector) Insert(user *User) (int64, error) {
 		"INSERT INTO user(`uname`,`round`,`win_count`,`rank`,`pwd`) VALUES ('" +
 			user.Name + "'," + strconv.Itoa(user.Round) + "," +
 			strconv.Itoa(user.WinCount) + "," + strconv.Itoa(user.Rank) +
-			"," + user.Pwd + ")")
+			",'" + user.Pwd + "')")
 	if err != nil {
 		return -1, err
 	}
@@ -89,12 +89,17 @@ func (self *MysqlConnector) QueryByUserName(userName string,
 	result, err := self.connection.Query("SELECT * FROM user WHERE uname='" +
 		userName + "' AND pwd='" + pwd + "'")
 	defer result.Close()
-
+	if result == nil || err != nil {
+		return nil, err
+	}
 	users := []User{}
 	for result.Next() {
 		u := new(User)
 		result.Scan(&u.Id, &u.Name, &u.Round, &u.WinCount, &u.Rank)
 		users = append(users, *u)
+	}
+	if len(users) < 1 {
+		return nil, nil
 	}
 	return users, nil
 }

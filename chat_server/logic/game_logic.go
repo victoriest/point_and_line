@@ -64,3 +64,7 @@ func processSearchGame(server *sev.Nexus, ipStr string, message *protocol.Mobile
 
 	}
 }
+
+func processEndGame(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+	endGame(server, ipStr)
+}

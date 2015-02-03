@@ -296,6 +296,9 @@ namespace protocol
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_END_GAME_REQ", Value=11)]
       MSG_TYPE_END_GAME_REQ = 11,
             
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_END_GAME_RES", Value=12)]
+      MSG_TYPE_END_GAME_RES = 12,
+            
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_CREATE_USER_REQ", Value=101)]
       MSG_TYPE_CREATE_USER_REQ = 101,
             

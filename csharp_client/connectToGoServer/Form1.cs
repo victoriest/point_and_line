@@ -303,12 +303,15 @@ namespace connectToGoServer
             {
                 CreateUserDTO dto = new CreateUserDTO();
                 dto.uName = txtIn.Text;
+                dto.pwd = txtPwd.Text;
                 connector.SendMessage<CreateUserDTO>((int)MessageType.MSG_TYPE_CREATE_USER_REQ, dto);
             }
             else if (radioLogin.Checked)
             {
                 LoginDTO dto = new LoginDTO();
-                dto.userId = long.Parse(txtIn.Text);
+                dto.userId = 1;
+                dto.uName = txtIn.Text;
+                dto.pwd = txtPwd.Text;
                 connector.SendMessage<LoginDTO>((int)MessageType.MSG_TYPE_LOGIN_REQ, dto);
             }
         }

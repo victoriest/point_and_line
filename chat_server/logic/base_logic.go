@@ -46,6 +46,7 @@ func processLogin(server *sev.Nexus, ipStr string,
 	if err != nil || userArr == nil || len(userArr) < 1 {
 		sendBack(server, ipStr, nil,
 			int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+		return
 	}
 
 	//loginResultDto := &protocol.LoginResultDTO{}
