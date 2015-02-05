@@ -68,3 +68,11 @@ func processLogin(server *sev.Nexus, ipStr string,
 	sendBack(server, ipStr, byt,
 		int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
 }
+
+func processChatMessage(server *sev.Nexus, message *protocol.MobileSuiteModel) {
+	chatDto := &protocol.ChatMsg{}
+	proto.Unmarshal(message.Message, chatDto)
+
+	byt, _ := proto.Marshal(chatDto)
+	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+}

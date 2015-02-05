@@ -162,7 +162,9 @@ namespace connectToGoServer
         private void btnSend_Click(object sender, EventArgs e)
         {
             ChatMsg chat = new ChatMsg();
-            chat.chatContext = txtMsg.Text;
+            chat.userId = playerInfo.userId;
+            chat.uName = playerInfo.uName;
+            chat.chatContext = String.Format("{0}:{1}", playerInfo.uName, txtMsg.Text);
             connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_CHAT_MESSGAE_REQ, chat);
         }
 

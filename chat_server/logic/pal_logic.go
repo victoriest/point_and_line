@@ -20,7 +20,8 @@ func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteMo
 	log.Debug(message)
 	switch int32(*message.Type) {
 	case int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE_REQ):
-		server.BroadcastMessage(message)
+		//server.BroadcastMessage(message)
+		processChatMessage(server, message)
 	case int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_REQ):
 		processLinePoint(server, ipStr, message)
 	case int32(protocol.MessageType_MSG_TYPE_SEARCH_A_GAME_REQ):
