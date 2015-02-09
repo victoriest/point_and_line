@@ -5,6 +5,7 @@ import (
 	sev "../server"
 	log "code.google.com/p/log4go"
 	"container/list"
+	"fmt"
 	proto "github.com/golang/protobuf/proto"
 	"net"
 )
@@ -61,6 +62,7 @@ func endGame(server *sev.Nexus, ipStr string) {
 	logoutDto := &protocol.LogoutDTO{UserId: proto.Int64(1)}
 	byt, _ := proto.Marshal(logoutDto)
 	sendBack(server, opptIpStr, byt, int32(protocol.MessageType_MSG_TYPE_END_GAME_RES))
+	fmt.Println(opptIpStr)
 	delete(ipMappingNick, opptIpStr)
 	delete(ipMappingNick, ipStr)
 	delete(inGameMap, opptIpStr)

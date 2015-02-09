@@ -97,6 +97,10 @@ namespace connectToGoServer
                     playerInfo = loginResult;
                     EnableGameUI(true);
                     break;
+                case (int)MessageType.MSG_TYPE_LOGOUT_RES:
+                case (int)MessageType.MSG_TYPE_END_GAME_RES:
+                    MessageBox.Show("玩家退出了游戏");
+                    break;
                 case (int)MessageType.MSG_TYPE_CREATE_USER_RES:
                     stream = new MemoryStream(msm.message);
                     CreateResultDTO createResult = ProtoBuf.Serializer.Deserialize<CreateResultDTO>(stream);
