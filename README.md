@@ -21,3 +21,4 @@
 
 ## protobuf ##
 服务端与客户端的数据通信就靠它了.
+其中, dto定义文件在此目录下的MobileSuite.proto
