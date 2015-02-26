@@ -13,8 +13,8 @@
 
 # 工程结构 #
 
-## chat_server ##
-无视掉这个名字吧, 这个是游戏的服务端, 用golang实现. 
+## go_server ##
+这个是游戏的服务端, 用golang实现. 
 
 ## csharp_client ##
 这个是用.net的一个客户端实现.
