@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 )
@@ -21,7 +22,23 @@ func main() {
 			continue
 		}
 
-		fmt.Println(tcpConn.RemoteAddr().String())
+		fmt.Println("A client connected : " + tcpConn.RemoteAddr().String())
 
+	}
+
+}
+
+func tcpPipe(conn *net.TCPConn) {
+	ipStr := conn.RemoteAddr().String()
+	defer func() {
+		fmt.Println("disconnected :" + ipStr)
+		conn.Close()
+	}()
+
+	reader := bufio.NewReader(conn)
+
+	for {
+		message, _, _ := reader.ReadLine()
+		fmt.Println(string(message))
 	}
 }
