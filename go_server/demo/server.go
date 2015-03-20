@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"time"
 )
+
+var ConnMap map[string]*net.TCPConn
 
 func main() {
 	var tcpAddr *net.TCPAddr
-
+	ConnMap = make(map[string]*net.TCPConn)
 	tcpAddr, _ = net.ResolveTCPAddr("tcp", "127.0.0.1:9999")
 
 	tcpListener, _ := net.ListenTCP("tcp", tcpAddr)
@@ -23,6 +24,7 @@ func main() {
 		}
 
 		fmt.Println("A client connected : " + tcpConn.RemoteAddr().String())
+		ConnMap[tcpConn.RemoteAddr().String()] = tcpConn
 		go tcpPipe(tcpConn)
 	}
 
@@ -41,10 +43,14 @@ func tcpPipe(conn *net.TCPConn) {
 		if err != nil {
 			return
 		}
+		fmt.Println(conn.RemoteAddr().String() + ":" + string(message))
+		boradcastMessage(conn.RemoteAddr().String() + ":" + string(message))
+	}
+}
 
-		fmt.Println(string(message))
-		msg := time.Now().String() + "\n"
-		b := []byte(msg)
+func boradcastMessage(message string) {
+	b := []byte(message)
+	for _, conn := range ConnMap {
 		conn.Write(b)
 	}
 }

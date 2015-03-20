@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"time"
 )
 
 var quitSemaphore chan bool
@@ -18,11 +17,20 @@ func main() {
 	fmt.Println("connected!")
 
 	go onMessageRecived(conn)
+	for {
+		var msg string
+		fmt.Scanln(&msg)
+		b := []byte(msg + "\n")
+		conn.Write(b)
+	}
+	// b := []byte("time\n")
+	// conn.Write(b)
 
-	b := []byte("time\n")
-	conn.Write(b)
+	// <-quitSemaphore
+}
 
-	<-quitSemaphore
+func messageSend(conn *net.TCPConn) {
+
 }
 
 func onMessageRecived(conn *net.TCPConn) {
@@ -34,8 +42,5 @@ func onMessageRecived(conn *net.TCPConn) {
 			quitSemaphore <- true
 			break
 		}
-		time.Sleep(time.Second)
-		b := []byte(msg)
-		conn.Write(b)
 	}
 }
