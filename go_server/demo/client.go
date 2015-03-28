@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./codec"
 	"bufio"
 	"fmt"
 	"net"
@@ -20,7 +21,7 @@ func main() {
 	for {
 		var msg string
 		fmt.Scanln(&msg)
-		b := []byte(msg + "\n")
+		b, _ := codec.Encode(msg)
 		conn.Write(b)
 	}
 	// b := []byte("time\n")
@@ -29,14 +30,10 @@ func main() {
 	// <-quitSemaphore
 }
 
-func messageSend(conn *net.TCPConn) {
-
-}
-
 func onMessageRecived(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	for {
-		msg, err := reader.ReadString('\n')
+		msg, err := codec.Decode(reader)
 		fmt.Println(msg)
 		if err != nil {
 			quitSemaphore <- true

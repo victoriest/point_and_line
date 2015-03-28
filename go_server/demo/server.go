@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./codec"
 	"bufio"
 	"fmt"
 	"net"
@@ -39,7 +40,7 @@ func tcpPipe(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 
 	for {
-		message, err := reader.ReadString('\n')
+		message, err := codec.Decode(reader)
 		if err != nil {
 			return
 		}
@@ -49,8 +50,11 @@ func tcpPipe(conn *net.TCPConn) {
 }
 
 func boradcastMessage(message string) {
-	b := []byte(message)
 	for _, conn := range ConnMap {
+		b, err := codec.Encode(message)
+		if err != nil {
+			continue
+		}
 		conn.Write(b)
 	}
 }
