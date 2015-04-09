@@ -1,14 +1,9 @@
 ﻿using protocol;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace connectToGoServer
 {
@@ -24,9 +19,9 @@ namespace connectToGoServer
         public delegate void DisconnectedDelegate();
         public event DisconnectedDelegate OnDisconnectedEvent;
 
-        private static ServerConnector instance = null;
+        private static ServerConnector _instance;
 
-        private Socket socket = null;
+        private Socket _socket;
 
         public string Ip { get; set; }
 
@@ -34,20 +29,16 @@ namespace connectToGoServer
 
         public int BuffLength { get; set; }
 
-        private static ManualResetEvent connectDone = new ManualResetEvent(false);
-        private static ManualResetEvent sendDone = new ManualResetEvent(false);
-        private static ManualResetEvent receiveDone = new ManualResetEvent(false);
-
-        private SocketError socketError;
+        private SocketError _socketError;
 
         // 获取连接器的引用
         public static ServerConnector GetInstance()
         {
-            if (instance == null)
+            if (_instance == null)
             {
-                instance = new ServerConnector();
+                _instance = new ServerConnector();
             }
-            return instance;
+            return _instance;
         }
 
         private ServerConnector()
@@ -66,10 +57,10 @@ namespace connectToGoServer
         // 初始化连接
         public bool InitSocket()
         {
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint ip = new IPEndPoint(IPAddress.Parse(Ip), Port);
 
-            IAsyncResult ar = socket.BeginConnect(ip, new AsyncCallback(OnConnected), socket);
+            IAsyncResult ar = _socket.BeginConnect(ip, new AsyncCallback(OnConnected), _socket);
 
             bool success = ar.AsyncWaitHandle.WaitOne(5000, true);
             if (!success)
@@ -78,12 +69,9 @@ namespace connectToGoServer
                 Console.Out.WriteLine("connection error");
                 return false;
             }
-            else
-            {
-                Thread thread = new Thread(new ThreadStart(BeginReceive));
-                thread.IsBackground = true;
-                thread.Start();
-            }
+            Thread thread = new Thread(new ThreadStart(BeginReceive));
+            thread.IsBackground = true;
+            thread.Start();
             return true;
         }
 
@@ -117,8 +105,8 @@ namespace connectToGoServer
 
         public void SendMessage(byte[] data)
         {
-            if (socket == null) return;
-            socket.BeginSend(data, 0, data.Length, SocketFlags.None, SendCallBack, socket);
+            if (_socket == null) return;
+            _socket.BeginSend(data, 0, data.Length, SocketFlags.None, SendCallBack, _socket);
         }
 
         private void SendCallBack(IAsyncResult result)
@@ -139,13 +127,13 @@ namespace connectToGoServer
         // 关闭连接
         public bool CloseConnect()
         {
-            if (socket != null && socket.Connected)
+            if (_socket != null && _socket.Connected)
             {
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
+                _socket.Shutdown(SocketShutdown.Both);
+                _socket.Close();
                 OnDisconnected();
             }
-            socket = null;
+            _socket = null;
             return true;
         }
 
@@ -155,13 +143,13 @@ namespace connectToGoServer
             try
             {
                 byte[] data = new byte[BuffLength];
-                socket.BeginReceive(data, 0, data.Length, SocketFlags.None, out socketError, ReceivedResult, data);
+                _socket.BeginReceive(data, 0, data.Length, SocketFlags.None, out _socketError, ReceivedResult, data);
             }
             catch (Exception)
             {
-                if (socket != null)
+                if (_socket != null)
                 {
-                    socket.Close();
+                    _socket.Close();
                     OnDisconnected();
                 }
             }
@@ -172,23 +160,23 @@ namespace connectToGoServer
             int count = 0;
             try
             {
-                count = socket.EndReceive(result);
+                count = _socket.EndReceive(result);
             }
             catch (SocketException e)
             {
-                socketError = e.SocketErrorCode;
+                _socketError = e.SocketErrorCode;
             }
             catch
             {
-                socketError = SocketError.HostDown;
+                _socketError = SocketError.HostDown;
             }
 
 
-            if (socketError == SocketError.Success && count > 0)
+            if (_socketError == SocketError.Success && count > 0)
             {
                 byte[] buffer = result.AsyncState as byte[];
                 byte[] data = new byte[count];
-                Array.Copy(buffer, 0, data, 0, data.Length);
+                if (buffer != null) Array.Copy(buffer, 0, data, 0, data.Length);
                 if (OnRecivedMessageEvent != null)
                 {
                     OnRecivedMessageEvent(data);
@@ -199,8 +187,8 @@ namespace connectToGoServer
             }
             else
             {
-                if (socket != null) {
-                    socket.Close();
+                if (_socket != null) {
+                    _socket.Close();
                     OnDisconnected();
                 }
             }
@@ -210,17 +198,13 @@ namespace connectToGoServer
         {
             try
             {
-                socket.EndConnect(asyncConnected);
-                if (socket.Connected)
+                _socket.EndConnect(asyncConnected);
+                if (_socket.Connected)
                 {
-
                     if (OnConnectedEvent != null)
                     {
                         OnConnectedEvent(asyncConnected);
                     }
-                }
-                else
-                {
                 }
             }
             catch (Exception)

@@ -1,15 +1,7 @@
 ﻿using protocol;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace connectToGoServer
@@ -149,7 +141,7 @@ namespace connectToGoServer
                     }
             
                     updateState();
-                    if (game.gameState == 2)
+                    if (game.GameState == 2)
                     {
                         MessageBox.Show("游戏结束");
                         isEnd = true;
@@ -180,7 +172,7 @@ namespace connectToGoServer
             String str = currentButton.Name;
             String[] arr = str.Split(new char[]{'_'});
 
-            int playerId = game.whosTurn;
+            int playerId = game.WhosTurn;
             int result = game.Line(Int32.Parse(arr[0]), Int32.Parse(arr[1]), playerIndex);
             if (result == 1)
             {
@@ -213,7 +205,7 @@ namespace connectToGoServer
             }
             
             updateState();
-            if (game.gameState == 2)
+            if (game.GameState == 2)
             {
                 MessageBox.Show("游戏结束");
                 isEnd = true;
@@ -239,7 +231,7 @@ namespace connectToGoServer
             //        this.Controls.Add(bt);
             //    }
             //}
-            Object[] steps = game.gameSteps;
+            Object[] steps = game.GameSteps;
             int rows = steps.Length;
             for (int i = 0; i < rows; i++)
             {
@@ -281,7 +273,7 @@ namespace connectToGoServer
 
         private void updateState()
         {
-            if (game.whosTurn == playerIndex)
+            if (game.WhosTurn == playerIndex)
             {
                 labTurn.Text = "轮到你";
             }
@@ -289,8 +281,8 @@ namespace connectToGoServer
             {
                 labTurn.Text = "轮到" + opptNick;
             }
-            labPlayer1Socre.Text = game.player1Sorce.ToString();
-            labPlayer2Socre.Text = game.player2Sorce.ToString();
+            labPlayer1Socre.Text = game.Player1Sorce.ToString();
+            labPlayer2Socre.Text = game.Player2Sorce.ToString();
         }
 
         private void btnStart_Click(object sender, EventArgs e)
