@@ -7,3 +7,4 @@ csharp_client/connectToGoServer/bin/Debug/connectToGoServer.pdb
 *.Cache
 *.Cache
 csharp_client/connectToGoServer/obj/Debug/connectToGoServer.pdb
+go_server/server.config
