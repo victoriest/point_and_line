@@ -73,7 +73,13 @@ func (self *PointAndLineGame) IsEndGame() bool {
 	return self.GameState == 2
 }
 
-func (self *PointAndLineGame) Line(rowIndex int, colIndex, playerId int) int {
+func (self *PointAndLineGame) Line(rowIndex int, colIndex int, playerId int) int {
+
+	if self.GameState > 1 {
+		// 游戏结束了
+		return 3
+	}
+
 	if playerId != self.WhosTurn {
 		// 不论到你走
 		return 1

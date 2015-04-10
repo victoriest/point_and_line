@@ -3,7 +3,7 @@ package logic
 import (
 	"../protocol"
 	sev "../server"
-	game "./games"
+	"./games"
 	log "code.google.com/p/log4go"
 	proto "github.com/golang/protobuf/proto"
 )
@@ -15,7 +15,10 @@ func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileS
 
 	gameObj := gameObjMap[ipStr]
 	if gameObj == nil {
-		resByte, _ := proto.Marshal(result)
+		response := &protocol.LineAPointResponseDTO{
+			Result: proto.Int32(int32(-1)),
+		}
+		resByte, _ := proto.Marshal(response)
 		resDtoMsg := &protocol.MobileSuiteModel{
 			Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES)),
 			Message: resByte,
@@ -24,7 +27,7 @@ func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileS
 		return
 	}
 
-	result := gameObj.Line(lpDto.Row, lpDto.Col, lpDto.PlayerIndex)
+	result := gameObj.Line(int(*lpDto.Row), int(*lpDto.Col), int(*lpDto.PlayerIndex))
 	if result == 0 {
 		byt, _ := proto.Marshal(lpDto)
 		lpDtoMsg := &protocol.MobileSuiteModel{
@@ -34,14 +37,15 @@ func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileS
 		server.SendTo(to, lpDtoMsg)
 	}
 
-	resByte, _ := proto.Marshal(result)
+	response := &protocol.LineAPointResponseDTO{
+		Result: proto.Int32(int32(result)),
+	}
+	resByte, _ := proto.Marshal(response)
 	resDtoMsg := &protocol.MobileSuiteModel{
 		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES)),
 		Message: resByte,
 	}
 	server.SendTo(ipStr, resDtoMsg)
-
-	// TODO 返回一条消息
 
 }
 
