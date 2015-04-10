@@ -128,6 +128,23 @@ namespace protocol
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"LineAPointResponseDTO")]
+  public partial class LineAPointResponseDTO : global::ProtoBuf.IExtensible
+  {
+    public LineAPointResponseDTO() {}
+    
+    private int _result;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"result", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int result
+    {
+      get { return _result; }
+      set { _result = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
   [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"CreateUserDTO")]
   public partial class CreateUserDTO : global::ProtoBuf.IExtensible
   {
@@ -292,6 +309,9 @@ namespace protocol
             
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LINE_A_POINT_RES", Value=10)]
       MSG_TYPE_LINE_A_POINT_RES = 10,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES", Value=14)]
+      MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES = 14,
             
       [global::ProtoBuf.ProtoEnum(Name=@"MSG_TYPE_END_GAME_REQ", Value=11)]
       MSG_TYPE_END_GAME_REQ = 11,

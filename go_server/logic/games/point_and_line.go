@@ -43,6 +43,7 @@ func NewPointAndLineGame(gameType int) *PointAndLineGame {
 	if !result {
 		return nil
 	}
+
 	return game
 }
 
@@ -73,12 +74,12 @@ func (self *PointAndLineGame) IsEndGame() bool {
 }
 
 func (self *PointAndLineGame) Line(rowIndex int, colIndex, playerId int) int {
-	if playerId != WhoTurn {
+	if playerId != self.WhosTurn {
 		// 不论到你走
 		return 1
 	}
 
-	obj := self.GameSteps[rowIndex]
+	obj := self.GameSteps[rowIndex].([]int)
 	state := obj[colIndex]
 	if state != 0 {
 		// 这里不能走魂淡
@@ -86,7 +87,7 @@ func (self *PointAndLineGame) Line(rowIndex int, colIndex, playerId int) int {
 	}
 
 	// 能走就走上
-	obj[colIndex] = WhoTurn
+	obj[colIndex] = self.WhosTurn
 
 	// 判断是否得分
 	isScore := false
@@ -94,20 +95,20 @@ func (self *PointAndLineGame) Line(rowIndex int, colIndex, playerId int) int {
 		// 偶数
 		if rowIndex+2 < len(self.GameSteps) {
 			// 下面的方块
-			bottomBottom := ([]int(self.GameSteps[rowIndex+2]))[colIndex]
-			bottomLeft := ([]int(self.GameSteps[rowIndex+1]))[colIndex]
-			bottomRight := ([]int(self.GameSteps[rowIndex+1]))[colIndex+1]
-			if bottomBottom != 0 && bottomLeft != 0 && bottomRight != 0 && bottomBottom == bottomLeft && bottomLeft == bottomRight && WhosTurn == bottomRight {
+			bottomBottom := (self.GameSteps[rowIndex+2].([]int))[colIndex]
+			bottomLeft := (self.GameSteps[rowIndex+1].([]int))[colIndex]
+			bottomRight := (self.GameSteps[rowIndex+1].([]int))[colIndex+1]
+			if bottomBottom != 0 && bottomLeft != 0 && bottomRight != 0 && bottomBottom == bottomLeft && bottomLeft == bottomRight && self.WhosTurn == bottomRight {
 				self.plusSocre(playerId)
 				isScore = true
 			}
 		}
 		if rowIndex-2 >= 0 {
 			// 上面的方块
-			topLeft := ([]int(self.GameSteps[rowIndex-1]))[colIndex]
-			topTop := ([]int(self.GameSteps[rowIndex-2]))[colIndex]
-			topRight := ([]int(self.GameSteps[rowIndex-1]))[colIndex+1]
-			if topLeft != 0 && topTop != 0 && topRight != 0 && topLeft == topTop && topTop == topRight && WhosTurn == topRight {
+			topLeft := ((self.GameSteps[rowIndex-1]).([]int))[colIndex]
+			topTop := ((self.GameSteps[rowIndex-2]).([]int))[colIndex]
+			topRight := ((self.GameSteps[rowIndex-1]).([]int))[colIndex+1]
+			if topLeft != 0 && topTop != 0 && topRight != 0 && topLeft == topTop && topTop == topRight && self.WhosTurn == topRight {
 				self.plusSocre(playerId)
 				isScore = true
 			}
@@ -116,20 +117,20 @@ func (self *PointAndLineGame) Line(rowIndex int, colIndex, playerId int) int {
 		// 奇数
 		if colIndex-1 >= 0 {
 			// 左边的方块
-			leftLeft := ([]int(self.GameSteps[rowIndex]))[colIndex-1]
-			leftTop := ([]int(self.GameSteps[rowIndex-1]))[colIndex-1]
-			leftBottom := ([]int(self.GameSteps[rowIndex+1]))[colIndex-1]
-			if leftLeft != 0 && leftTop != 0 && leftBottom != 0 && leftLeft == leftTop && leftTop == leftBottom && WhosTurn == leftBottom {
+			leftLeft := ((self.GameSteps[rowIndex]).([]int))[colIndex-1]
+			leftTop := ((self.GameSteps[rowIndex-1]).([]int))[colIndex-1]
+			leftBottom := ((self.GameSteps[rowIndex+1]).([]int))[colIndex-1]
+			if leftLeft != 0 && leftTop != 0 && leftBottom != 0 && leftLeft == leftTop && leftTop == leftBottom && self.WhosTurn == leftBottom {
 				self.plusSocre(playerId)
 				isScore = true
 			}
 		}
-		if colIndex+1 < len([]int(self.GameSteps[rowIndex])) {
+		if colIndex+1 < len((self.GameSteps[rowIndex]).([]int)) {
 			// 右边的方块
-			rightRight := ([]int(self.GameSteps[rowIndex]))[colIndex+1]
-			rightTop := ([]int(self.GameSteps[rowIndex-1]))[colIndex]
-			rightBottom := ([]int(self.GameSteps[rowIndex+1]))[colIndex]
-			if rightRight != 0 && rightTop != 0 && rightBottom != 0 && rightRight == rightTop && rightTop == rightBottom && WhosTurn == rightBottom {
+			rightRight := ((self.GameSteps[rowIndex]).([]int))[colIndex+1]
+			rightTop := ((self.GameSteps[rowIndex-1]).([]int))[colIndex]
+			rightBottom := ((self.GameSteps[rowIndex+1]).([]int))[colIndex]
+			if rightRight != 0 && rightTop != 0 && rightBottom != 0 && rightRight == rightTop && rightTop == rightBottom && self.WhosTurn == rightBottom {
 				self.plusSocre(playerId)
 				isScore = true
 			}
@@ -149,8 +150,8 @@ func (self *PointAndLineGame) Line(rowIndex int, colIndex, playerId int) int {
 
 	// 判断游戏是否结束
 	haveSpace := false
-	for t, _ := range self.GameSteps {
-		row := []int(t)
+	for _, obj := range self.GameSteps {
+		row := obj.([]int)
 		for t1, _ := range row {
 			if t1 == 0 {
 				haveSpace = true

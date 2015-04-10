@@ -3,6 +3,7 @@ package logic
 import (
 	"../protocol"
 	sev "../server"
+	game "./games"
 	log "code.google.com/p/log4go"
 	proto "github.com/golang/protobuf/proto"
 )
@@ -12,12 +13,36 @@ func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileS
 	lpDto := &protocol.LineAPointDTO{}
 	proto.Unmarshal(message.Message, lpDto)
 
-	byt, _ := proto.Marshal(lpDto)
-	lpDtoMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_RES)),
-		Message: byt,
+	gameObj := gameObjMap[ipStr]
+	if gameObj == nil {
+		resByte, _ := proto.Marshal(result)
+		resDtoMsg := &protocol.MobileSuiteModel{
+			Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES)),
+			Message: resByte,
+		}
+		server.SendTo(ipStr, resDtoMsg)
+		return
 	}
-	server.SendTo(to, lpDtoMsg)
+
+	result := gameObj.Line(lpDto.Row, lpDto.Col, lpDto.PlayerIndex)
+	if result == 0 {
+		byt, _ := proto.Marshal(lpDto)
+		lpDtoMsg := &protocol.MobileSuiteModel{
+			Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_RES)),
+			Message: byt,
+		}
+		server.SendTo(to, lpDtoMsg)
+	}
+
+	resByte, _ := proto.Marshal(result)
+	resDtoMsg := &protocol.MobileSuiteModel{
+		Type:    proto.Int32(int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES)),
+		Message: resByte,
+	}
+	server.SendTo(ipStr, resDtoMsg)
+
+	// TODO 返回一条消息
+
 }
 
 func processSearchGame(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
@@ -47,6 +72,9 @@ func processSearchGame(server *sev.Nexus, ipStr string, message *protocol.Mobile
 
 		inGameMap[strIp1] = strIp2
 		inGameMap[strIp2] = strIp1
+		gameObj := games.NewPointAndLineGame(2)
+		gameObjMap[strIp1] = gameObj
+		gameObjMap[strIp2] = gameObj
 
 		gsDto1 := &protocol.GameStartDTO{
 			OpptName:    proto.String(ipMappingNick[strIp2]),

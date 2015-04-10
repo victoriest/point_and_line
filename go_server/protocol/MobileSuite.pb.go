@@ -13,6 +13,7 @@ It has these top-level messages:
 	ChatMsg
 	GameStartDTO
 	LineAPointDTO
+	LineAPointResponseDTO
 	CreateUserDTO
 	CreateResultDTO
 	LoginDTO
@@ -31,23 +32,24 @@ var _ = math.Inf
 type MessageType int32
 
 const (
-	MessageType_MSG_TYPE_CHAT_MESSGAE_REQ  MessageType = 1
-	MessageType_MSG_TYPE_CHAT_MESSAGE_RES  MessageType = 2
-	MessageType_MSG_TYPE_SEARCH_A_GAME_REQ MessageType = 3
-	MessageType_MSG_TYPE_SEARCH_A_GAME_RES MessageType = 4
-	MessageType_MSG_TYPE_STOP_SEARCH_REQ   MessageType = 5
-	MessageType_MSG_TYPE_STOP_SEARCH_RES   MessageType = 6
-	MessageType_MSG_TYPE_START_RES         MessageType = 8
-	MessageType_MSG_TYPE_LINE_A_POINT_REQ  MessageType = 9
-	MessageType_MSG_TYPE_LINE_A_POINT_RES  MessageType = 10
-	MessageType_MSG_TYPE_END_GAME_REQ      MessageType = 11
-	MessageType_MSG_TYPE_END_GAME_RES      MessageType = 12
-	MessageType_MSG_TYPE_CREATE_USER_REQ   MessageType = 101
-	MessageType_MSG_TYPE_CREATE_USER_RES   MessageType = 102
-	MessageType_MSG_TYPE_LOGIN_REQ         MessageType = 103
-	MessageType_MSG_TYPE_LOGIN_RES         MessageType = 104
-	MessageType_MSG_TYPE_LOGOUT_REQ        MessageType = 105
-	MessageType_MSG_TYPE_LOGOUT_RES        MessageType = 106
+	MessageType_MSG_TYPE_CHAT_MESSGAE_REQ            MessageType = 1
+	MessageType_MSG_TYPE_CHAT_MESSAGE_RES            MessageType = 2
+	MessageType_MSG_TYPE_SEARCH_A_GAME_REQ           MessageType = 3
+	MessageType_MSG_TYPE_SEARCH_A_GAME_RES           MessageType = 4
+	MessageType_MSG_TYPE_STOP_SEARCH_REQ             MessageType = 5
+	MessageType_MSG_TYPE_STOP_SEARCH_RES             MessageType = 6
+	MessageType_MSG_TYPE_START_RES                   MessageType = 8
+	MessageType_MSG_TYPE_LINE_A_POINT_REQ            MessageType = 9
+	MessageType_MSG_TYPE_LINE_A_POINT_RES            MessageType = 10
+	MessageType_MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES MessageType = 14
+	MessageType_MSG_TYPE_END_GAME_REQ                MessageType = 11
+	MessageType_MSG_TYPE_END_GAME_RES                MessageType = 12
+	MessageType_MSG_TYPE_CREATE_USER_REQ             MessageType = 101
+	MessageType_MSG_TYPE_CREATE_USER_RES             MessageType = 102
+	MessageType_MSG_TYPE_LOGIN_REQ                   MessageType = 103
+	MessageType_MSG_TYPE_LOGIN_RES                   MessageType = 104
+	MessageType_MSG_TYPE_LOGOUT_REQ                  MessageType = 105
+	MessageType_MSG_TYPE_LOGOUT_RES                  MessageType = 106
 )
 
 var MessageType_name = map[int32]string{
@@ -60,6 +62,7 @@ var MessageType_name = map[int32]string{
 	8:   "MSG_TYPE_START_RES",
 	9:   "MSG_TYPE_LINE_A_POINT_REQ",
 	10:  "MSG_TYPE_LINE_A_POINT_RES",
+	14:  "MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES",
 	11:  "MSG_TYPE_END_GAME_REQ",
 	12:  "MSG_TYPE_END_GAME_RES",
 	101: "MSG_TYPE_CREATE_USER_REQ",
@@ -70,23 +73,24 @@ var MessageType_name = map[int32]string{
 	106: "MSG_TYPE_LOGOUT_RES",
 }
 var MessageType_value = map[string]int32{
-	"MSG_TYPE_CHAT_MESSGAE_REQ":  1,
-	"MSG_TYPE_CHAT_MESSAGE_RES":  2,
-	"MSG_TYPE_SEARCH_A_GAME_REQ": 3,
-	"MSG_TYPE_SEARCH_A_GAME_RES": 4,
-	"MSG_TYPE_STOP_SEARCH_REQ":   5,
-	"MSG_TYPE_STOP_SEARCH_RES":   6,
-	"MSG_TYPE_START_RES":         8,
-	"MSG_TYPE_LINE_A_POINT_REQ":  9,
-	"MSG_TYPE_LINE_A_POINT_RES":  10,
-	"MSG_TYPE_END_GAME_REQ":      11,
-	"MSG_TYPE_END_GAME_RES":      12,
-	"MSG_TYPE_CREATE_USER_REQ":   101,
-	"MSG_TYPE_CREATE_USER_RES":   102,
-	"MSG_TYPE_LOGIN_REQ":         103,
-	"MSG_TYPE_LOGIN_RES":         104,
-	"MSG_TYPE_LOGOUT_REQ":        105,
-	"MSG_TYPE_LOGOUT_RES":        106,
+	"MSG_TYPE_CHAT_MESSGAE_REQ":            1,
+	"MSG_TYPE_CHAT_MESSAGE_RES":            2,
+	"MSG_TYPE_SEARCH_A_GAME_REQ":           3,
+	"MSG_TYPE_SEARCH_A_GAME_RES":           4,
+	"MSG_TYPE_STOP_SEARCH_REQ":             5,
+	"MSG_TYPE_STOP_SEARCH_RES":             6,
+	"MSG_TYPE_START_RES":                   8,
+	"MSG_TYPE_LINE_A_POINT_REQ":            9,
+	"MSG_TYPE_LINE_A_POINT_RES":            10,
+	"MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES": 14,
+	"MSG_TYPE_END_GAME_REQ":                11,
+	"MSG_TYPE_END_GAME_RES":                12,
+	"MSG_TYPE_CREATE_USER_REQ":             101,
+	"MSG_TYPE_CREATE_USER_RES":             102,
+	"MSG_TYPE_LOGIN_REQ":                   103,
+	"MSG_TYPE_LOGIN_RES":                   104,
+	"MSG_TYPE_LOGOUT_REQ":                  105,
+	"MSG_TYPE_LOGOUT_RES":                  106,
 }
 
 func (x MessageType) Enum() *MessageType {
@@ -225,6 +229,23 @@ func (m *LineAPointDTO) GetCol() int32 {
 func (m *LineAPointDTO) GetPlayerIndex() int32 {
 	if m != nil && m.PlayerIndex != nil {
 		return *m.PlayerIndex
+	}
+	return 0
+}
+
+// 连线的返回值
+type LineAPointResponseDTO struct {
+	Result           *int32 `protobuf:"varint,1,req,name=result" json:"result,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *LineAPointResponseDTO) Reset()         { *m = LineAPointResponseDTO{} }
+func (m *LineAPointResponseDTO) String() string { return proto.CompactTextString(m) }
+func (*LineAPointResponseDTO) ProtoMessage()    {}
+
+func (m *LineAPointResponseDTO) GetResult() int32 {
+	if m != nil && m.Result != nil {
+		return *m.Result
 	}
 	return 0
 }

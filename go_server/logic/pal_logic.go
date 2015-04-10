@@ -3,6 +3,7 @@ package logic
 import (
 	"../protocol"
 	sev "../server"
+	game "./games"
 	log "code.google.com/p/log4go"
 	"container/list"
 	"fmt"
@@ -15,6 +16,8 @@ var inGameMap = make(map[string]string)
 var ipMappingNick = make(map[string]string)
 
 var joinGameList = list.New()
+
+var gameObjMap = make(map[string]*game.PointAndLineGame)
 
 // 处理消息具体实现
 func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
@@ -67,6 +70,8 @@ func endGame(server *sev.Nexus, ipStr string) {
 	delete(ipMappingNick, ipStr)
 	delete(inGameMap, opptIpStr)
 	delete(inGameMap, ipStr)
+	delete(gameObjMap, ipStr)
+	delete(gameObjMap, opptIpStr)
 }
 
 func sendBack(server *sev.Nexus, ipStr string, byt []byte, msgType int32) {

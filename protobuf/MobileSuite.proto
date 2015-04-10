@@ -18,6 +18,7 @@ enum MessageType {
 
 	MSG_TYPE_LINE_A_POINT_REQ = 9;		// 连一个线
 	MSG_TYPE_LINE_A_POINT_RES = 10;		
+	MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES = 14;
 
 	MSG_TYPE_END_GAME_REQ = 11;
 	MSG_TYPE_END_GAME_RES = 12;
@@ -56,6 +57,11 @@ message LineAPointDTO {
 	required int32 row = 1;
 	required int32 col = 2;
 	required int32 playerIndex = 3;
+}
+
+// 连线的返回值
+message LineAPointResponseDTO {
+	required int32 result = 1;
 }
 
 // 创建角色
