@@ -1,4 +1,5 @@
-﻿using protocol;
+﻿using System.Globalization;
+using protocol;
 using System;
 using System.Drawing;
 using System.IO;
@@ -8,39 +9,40 @@ namespace connectToGoServer
 {
     public partial class Form1 : Form
     {
-        private ServerConnector connector;
+        private readonly ServerConnector _connector;
 
-        private LineAndPointGame game;
+        private LineAndPointGame _game;
 
-        private bool isEnd;
+        private bool _isEnd;
 
-        private int playerIndex = 0;
+        private int _playerIndex;
 
-        private string opptNick = "";
+        private string _opptNick = "";
 
         //private string serverIp = "115.159.40.89";
-        private string serverIp = "127.0.0.1";
+        private const string ServerIp = "127.0.0.1";
 
-        private int serverPort = 8990;
+        private const int ServerPort = 8990;
 
-        private LoginResultDTO playerInfo;
+        private LoginResultDTO _playerInfo;
 
-        private LoginResultDTO opptInfo;
+        private LoginResultDTO _opptInfo;
 
-        public delegate void startNewGameDelegate();
-        public startNewGameDelegate start;
+        public delegate void StartNewGameDelegate();
+        public StartNewGameDelegate Start;
 
-        public Form1()
+        public Form1(LoginResultDTO opptInfo)
         {
+            this._opptInfo = opptInfo;
             InitializeComponent();
-            connector = ServerConnector.GetInstance();
-            connector.OnConnectedEvent += ConnectedCallBack;
-            connector.OnRecivedMessageEvent += RecivedMessage;
-            connector.OnDisconnectedEvent += DisconnectedCallBack;
+            _connector = ServerConnector.GetInstance();
+            _connector.OnConnectedEvent += ConnectedCallBack;
+            _connector.OnRecivedMessageEvent += RecivedMessage;
+            _connector.OnDisconnectedEvent += DisconnectedCallBack;
             Control.CheckForIllegalCrossThreadCalls = false;
-            EnableGameUI(false);
-            playerIndex = 0;
-            opptNick = "";
+            EnableGameUi(false);
+            _playerIndex = 0;
+            _opptNick = "";
         }
 
         private void ConnectedCallBack(IAsyncResult ar)
@@ -51,11 +53,11 @@ namespace connectToGoServer
         private void DisconnectedCallBack()
         {
             lbInfo.Items.Add("disconnected");
-            EnableGameUI(false);
+            EnableGameUi(false);
             this.Close();
         }
 
-        private void EnableGameUI(bool enable) {
+        private void EnableGameUi(bool enable) {
             //txtNick.Enabled = !enable;
             txtMsg.Enabled = enable;
             btnSend.Enabled = enable;
@@ -86,8 +88,8 @@ namespace connectToGoServer
                     stream = new MemoryStream(msm.message);
                     LoginResultDTO loginResult = ProtoBuf.Serializer.Deserialize<LoginResultDTO>(stream);
                     txtIn.Text = loginResult.uName;
-                    playerInfo = loginResult;
-                    EnableGameUI(true);
+                    _playerInfo = loginResult;
+                    EnableGameUi(true);
                     break;
                 case (int)MessageType.MSG_TYPE_LOGOUT_RES:
                 case (int)MessageType.MSG_TYPE_END_GAME_RES:
@@ -97,7 +99,7 @@ namespace connectToGoServer
                     stream = new MemoryStream(msm.message);
                     CreateResultDTO createResult = ProtoBuf.Serializer.Deserialize<CreateResultDTO>(stream);
                     lbInfo.Items.Add(createResult.userId);
-                    txtIn.Text = createResult.userId.ToString();
+                    txtIn.Text = createResult.userId.ToString(CultureInfo.InvariantCulture);
                     break;
                 case (int)MessageType.MSG_TYPE_CHAT_MESSAGE_RES:
                     stream = new MemoryStream(msm.message);
@@ -107,20 +109,22 @@ namespace connectToGoServer
                 case (int)MessageType.MSG_TYPE_START_RES:
                     stream = new MemoryStream(msm.message);
                     GameStartDTO gsDto = ProtoBuf.Serializer.Deserialize<GameStartDTO>(stream);
-                    playerIndex = gsDto.playerIndex;
-                    opptNick = gsDto.opptName;
+                    _playerIndex = gsDto.playerIndex;
+                    _opptNick = gsDto.opptName;
                     //StartGame();
-                    start = new startNewGameDelegate(StartGame);
-                    this.Invoke(start);
+                    Start = new StartNewGameDelegate(StartGame);
+                    Invoke(Start);
+                    break;
+                case (int)MessageType.MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES:
                     break;
                 case (int)MessageType.MSG_TYPE_LINE_A_POINT_RES:
                     stream = new MemoryStream(msm.message);
                     LineAPointDTO lpDto = ProtoBuf.Serializer.Deserialize<LineAPointDTO>(stream);
-                    int result = game.Line(lpDto.row, lpDto.col, lpDto.playerIndex);
+                    int result = _game.Line(lpDto.row, lpDto.col, lpDto.playerIndex);
 
                     String btnName = String.Format("{0}_{1}", lpDto.row, lpDto.col);
                     Button currentButton = null;
-                    foreach (Control c in this.Controls)
+                    foreach (Control c in Controls)
                     {
                         if (c.Name == btnName)
                         {
@@ -141,10 +145,10 @@ namespace connectToGoServer
                     }
             
                     updateState();
-                    if (game.GameState == 2)
+                    if (_game.GameState == 2)
                     {
                         MessageBox.Show("游戏结束");
-                        isEnd = true;
+                        _isEnd = true;
                     }
                     break;
             }
@@ -152,28 +156,28 @@ namespace connectToGoServer
 
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
-            connector.CloseConnect();
+            _connector.CloseConnect();
         }
 
         private void btnSend_Click(object sender, EventArgs e)
         {
             ChatMsg chat = new ChatMsg();
-            chat.userId = playerInfo.userId;
-            chat.uName = playerInfo.uName;
-            chat.chatContext = String.Format("{0}:{1}", playerInfo.uName, txtMsg.Text);
-            connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_CHAT_MESSGAE_REQ, chat);
+            chat.userId = _playerInfo.userId;
+            chat.uName = _playerInfo.uName;
+            chat.chatContext = String.Format("{0}:{1}", _playerInfo.uName, txtMsg.Text);
+            _connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_CHAT_MESSGAE_REQ, chat);
         }
 
-        private void btnClick(object sender, System.EventArgs e)
+        private void BtnClick(object sender, EventArgs e)
         {
-            if (isEnd)
+            if (_isEnd)
                 return;
             Button currentButton = (Button)sender;
             String str = currentButton.Name;
             String[] arr = str.Split(new char[]{'_'});
 
-            int playerId = game.WhosTurn;
-            int result = game.Line(Int32.Parse(arr[0]), Int32.Parse(arr[1]), playerIndex);
+            int playerId = _game.WhosTurn;
+            int result = _game.Line(Int32.Parse(arr[0]), Int32.Parse(arr[1]), _playerIndex);
             if (result == 1)
             {
                 MessageBox.Show("还没轮到你走魂淡!");
@@ -200,25 +204,25 @@ namespace connectToGoServer
                 LineAPointDTO lpDto = new LineAPointDTO();
                 lpDto.row = Int32.Parse(arr[0]);
                 lpDto.col = Int32.Parse(arr[1]);
-                lpDto.playerIndex = playerIndex;
-                connector.SendMessage<LineAPointDTO>((int)MessageType.MSG_TYPE_LINE_A_POINT_REQ, lpDto);
+                lpDto.playerIndex = _playerIndex;
+                _connector.SendMessage<LineAPointDTO>((int)MessageType.MSG_TYPE_LINE_A_POINT_REQ, lpDto);
             }
             
             updateState();
-            if (game.GameState == 2)
+            if (_game.GameState == 2)
             {
                 MessageBox.Show("游戏结束");
-                isEnd = true;
+                _isEnd = true;
             }
         }
 
         private void StartGame()
         {
-            game = new LineAndPointGame(2);
+            _game = new LineAndPointGame(2);
             updateState();
 
-            int startX = 490;
-            int startY = 66;
+            const int startX = 490;
+            const int startY = 66;
             //Size btnSize = new Size(24, 24);
             //for (int i = 0; i < 5; i++) 
             //{
@@ -231,7 +235,7 @@ namespace connectToGoServer
             //        this.Controls.Add(bt);
             //    }
             //}
-            Object[] steps = game.GameSteps;
+            Object[] steps = _game.GameSteps;
             int rows = steps.Length;
             for (int i = 0; i < rows; i++)
             {
@@ -247,7 +251,7 @@ namespace connectToGoServer
                         bt.Location = new Point(startX + j * 80 + 24, startY + seed * 80);
                         bt.Size = new Size(80 - 24, 24);
                         bt.Name = String.Format("{0}_{1}", i, j);
-                        bt.Click += new System.EventHandler(btnClick);
+                        bt.Click += new EventHandler(BtnClick);
                         this.Controls.Add(bt);
                     }
 
@@ -264,7 +268,7 @@ namespace connectToGoServer
                         bt.Location = new Point(startX + j * 80, startY + seed * 80 + 24);
                         bt.Size = new Size(24, 80 - 24);
                         bt.Name = String.Format("{0}_{1}", i, j);
-                        bt.Click += new System.EventHandler(btnClick);
+                        bt.Click += new EventHandler(BtnClick);
                         this.Controls.Add(bt);
                     }
                 }
@@ -273,26 +277,26 @@ namespace connectToGoServer
 
         private void updateState()
         {
-            if (game.WhosTurn == playerIndex)
+            if (_game.WhosTurn == _playerIndex)
             {
                 labTurn.Text = "轮到你";
             }
             else
             {
-                labTurn.Text = "轮到" + opptNick;
+                labTurn.Text = "轮到" + _opptNick;
             }
-            labPlayer1Socre.Text = game.Player1Sorce.ToString();
-            labPlayer2Socre.Text = game.Player2Sorce.ToString();
+            labPlayer1Socre.Text = _game.Player1Sorce.ToString(CultureInfo.InvariantCulture);
+            labPlayer2Socre.Text = _game.Player2Sorce.ToString(CultureInfo.InvariantCulture);
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            playerIndex = 0;
-            opptNick = "";
+            _playerIndex = 0;
+            _opptNick = "";
 
             ChatMsg chat = new ChatMsg();
             chat.chatContext = txtIn.Text;
-            connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_SEARCH_A_GAME_REQ, chat);
+            _connector.SendMessage<ChatMsg>((int)MessageType.MSG_TYPE_SEARCH_A_GAME_REQ, chat);
         }
 
         private void btnCreateUser_Click(object sender, EventArgs e)
@@ -302,7 +306,7 @@ namespace connectToGoServer
                 CreateUserDTO dto = new CreateUserDTO();
                 dto.uName = txtIn.Text;
                 dto.pwd = txtPwd.Text;
-                connector.SendMessage<CreateUserDTO>((int)MessageType.MSG_TYPE_CREATE_USER_REQ, dto);
+                _connector.SendMessage<CreateUserDTO>((int)MessageType.MSG_TYPE_CREATE_USER_REQ, dto);
             }
             else if (radioLogin.Checked)
             {
@@ -310,29 +314,29 @@ namespace connectToGoServer
                 dto.userId = 1;
                 dto.uName = txtIn.Text;
                 dto.pwd = txtPwd.Text;
-                connector.SendMessage<LoginDTO>((int)MessageType.MSG_TYPE_LOGIN_REQ, dto);
+                _connector.SendMessage<LoginDTO>((int)MessageType.MSG_TYPE_LOGIN_REQ, dto);
             }
         }
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            EnableGameUI(false);
-            connector.InitSocket(serverIp, serverPort);
+            EnableGameUi(false);
+            _connector.InitSocket(ServerIp, ServerPort);
             lbInfo.Items.Add("connecting...");
-            radioCheck();
+            RadioCheck();
         }
 
         private void radioLogin_CheckedChanged(object sender, EventArgs e)
         {
-            radioCheck();
+            RadioCheck();
         }
 
         private void radioSign_CheckedChanged(object sender, EventArgs e)
         {
-            radioCheck();
+            RadioCheck();
         }
 
-        private void radioCheck() 
+        private void RadioCheck() 
         {
             if (radioLogin.Checked)
             {
