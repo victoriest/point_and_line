@@ -4,7 +4,7 @@ import (
 	"../protocol"
 	sev "../server"
 	"./games"
-	log "code.google.com/p/log4go"
+	log "github.com/alecthomas/log4go"
 	proto "github.com/golang/protobuf/proto"
 )
 

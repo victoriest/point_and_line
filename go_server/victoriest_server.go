@@ -6,7 +6,7 @@ import (
 	"./logic"
 	sev "./server"
 	"./utils"
-	log "code.google.com/p/log4go"
+	log "github.com/alecthomas/log4go"
 	"os"
 	"os/exec"
 	"path"

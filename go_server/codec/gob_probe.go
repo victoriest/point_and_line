@@ -2,9 +2,9 @@ package codec
 
 import (
 	"bytes"
-	log "code.google.com/p/log4go"
 	"encoding/binary"
 	"encoding/gob"
+	log "github.com/alecthomas/log4go"
 )
 
 // Gob的序列化实现

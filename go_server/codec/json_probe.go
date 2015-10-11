@@ -2,9 +2,9 @@ package codec
 
 import (
 	"bytes"
-	log "code.google.com/p/log4go"
 	"encoding/binary"
 	"encoding/json"
+	log "github.com/alecthomas/log4go"
 )
 
 // Josn的序列化实现

@@ -4,8 +4,8 @@ import (
 	"../protocol"
 	"bufio"
 	"bytes"
-	log "code.google.com/p/log4go"
 	"encoding/binary"
+	log "github.com/alecthomas/log4go"
 	proto "github.com/golang/protobuf/proto"
 )
 
