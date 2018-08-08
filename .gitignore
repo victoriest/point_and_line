@@ -1,10 +1,9 @@
 *.exe
-csharp_client/connectToGoServer/bin/Debug/connectToGoServer.exe.config
-csharp_client/connectToGoServer/bin/Debug/connectToGoServer.vshost.exe.config
-csharp_client/connectToGoServer/bin/Debug/connectToGoServer.vshost.exe.manifest
-csharp_client/connectToGoServer/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
-csharp_client/connectToGoServer/bin/Debug/connectToGoServer.pdb
 *.Cache
-*.Cache
-csharp_client/connectToGoServer/obj/Debug/connectToGoServer.pdb
+csharp_client/connectToGoServer/obj/Debug/*
+csharp_client/connectToGoServer/bin/Debug/*
 go_server/server.config
+victoriest_server
+csharp_client/.vs/connectToGoServer/v15/Server/sqlite3/storage.ide
+csharp_client/.vs/connectToGoServer/v15/Server/sqlite3/db.lock
+csharp_client/.vs/connectToGoServer/v15/.suo
