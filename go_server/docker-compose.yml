@@ -1,0 +1,28 @@
+version: "3"
+services:
+  pal-server:
+    image: golang:1.8
+    build: ./pal-server
+    image: pal-server
+    ports:
+      - "9090:9090"
+    volumes:
+      - /home/docker/point_and_line/pal-server:/home
+    depends_on:
+      - "pal-mysql"
+    networks:
+      - pal
+  pal-mysql:
+    image: mysql/mysql-server:5.7
+    ports:
+      - "3308:3306"
+    volumes:
+      - /home/docker/point_and_line/pal-mysql/init_sql:/docker-entrypoint-initdb.d
+      - /home/docker/point_and_line/pal-mysql/data/log/:/var/log/
+      - /home/docker/point_and_line/pal-mysql/data/mysqld/:/var/run/mysqld/
+      - /home/docker/point_and_line/pal-mysql/data/mysql:/var/lib/mysql
+      - /home/docker/point_and_line/pal-mysql/my.cnf:/etc/my.cnf
+    networks:
+      - pal
+networks:
+  pal:
