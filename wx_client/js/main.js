@@ -60,6 +60,7 @@ export default class Main {
       var s = this.gameInfo.checkWitchLineHasBeenClicked(x, y)
       if(s != null) {
         GAME.drawALine(s[0], s[1], GAME.whosTurn)
+        console.log(s, GAME.player1Score, GAME.player2Score)
       }
       return
     }
@@ -141,8 +142,21 @@ export default class Main {
     // }
   }
 
+  // 实现游戏帧循环
+  loop() {
+    // databus.frame++
+    // this.update()
+    this.render()
+
+    this.aniId = window.requestAnimationFrame(
+      this.bindLoop,
+      canvas
+    )
+  }
+}
+
   // 游戏逻辑更新主函数
-  update() {
+  // update() {
     // console.log("update")
     // if ( databus.gameOver )
     //   return;
@@ -163,22 +177,7 @@ export default class Main {
     //   this.player.shoot()
     //   this.music.playShoot()
     // }
-  }
-
-  // 实现游戏帧循环
-  loop() {
-    // databus.frame++
-    this.update()
-    this.render()
-
-    this.aniId = window.requestAnimationFrame(
-      this.bindLoop,
-      canvas
-    )
-  }
-}
-
-
+  // }
 
 /**
  * 随着帧数变化的敌机生成逻辑

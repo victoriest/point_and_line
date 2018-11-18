@@ -30,8 +30,9 @@ export default class GameInfo {
       var rows = GAME_BOARD[i].length
       for (var j = 0; j < rows; j++) {
         var line = GAME_BOARD[i][j]
-        if(line.isClicked(x, y))
+        if(line.isClicked(x, y)){
           return [i, j]
+        }
       }
     }
     return null
@@ -43,8 +44,10 @@ export default class GameInfo {
       for (var i = 0; i < game.gameSteps.length; i++) {
         GAME_BOARD[i] = new Array(game.gameSteps[i].length)
       }
-      var startX = 490
-      var startY = 66
+      var startX = screenWidth * 0.05
+      var startY = screenHeight / 2 - screenWidth / 2
+      var w = screenWidth / (game.gameSteps.length / 2)
+      var h = w / 5
       var rows = game.gameSteps.length
       for (var i = 0; i < rows; i++) {
         var seed = i / 2
@@ -54,11 +57,11 @@ export default class GameInfo {
           var line = null
           // 偶数
           if (i == 0 || i % 2 == 0) {
-            line = new Line(startX + j * 80 + 24, startY + seed * 80, 80 - 24, 24)
+            line = new Line(startX + j * w + h, startY + seed * w, w - h, h)
           }
           // 奇数
           else {
-            line = new Line(startX + j * 80, startY + seed * 80 + 24, 24, 80 - 24)
+            line = new Line(startX + j * w, startY + seed * w - h, h, w - h)
           }
           GAME_BOARD[i][j] = line
         }
@@ -68,7 +71,6 @@ export default class GameInfo {
     for (var i = 0; i < GAME_BOARD.length; i++) {
       var rows = GAME_BOARD[i].length
       for (var j = 0; j < rows; j++) {
-        console.info(i, j)
         var line = GAME_BOARD[i][j]
         line.drawToCanvas(ctx, game.gameSteps[i][j])
       }

@@ -1,5 +1,3 @@
-import Pool from './base/pool'
-
 let instance
 
 /**
@@ -12,7 +10,6 @@ export default class LineAndPointGame {
 
     instance = this
 
-    this.pool = new Pool()
     this.player1Score = 0
     this.player2Score = 0
     this.gameType = 2
@@ -44,13 +41,14 @@ export default class LineAndPointGame {
   }
 
   drawALine(rowIndex, colIndex, playerId) {
+    
     // not your turn
     if(playerId != this.whosTurn) {
       return 1
     }
     var obj = this.gameSteps[rowIndex]
     var state = obj[colIndex]
-
+    console.log(rowIndex, colIndex, playerId, this.whosTurn, obj, state)
     // cant step here
     if(state != 0) {
       return 2
@@ -72,7 +70,7 @@ export default class LineAndPointGame {
           isScore = true
         }
       }
-      if(rowIndex = 2 >= 0) {
+      if(rowIndex - 2 >= 0) {
         var topLeft = this.gameSteps[rowIndex - 1][colIndex]
         var topTop = this.gameSteps[rowIndex - 2][colIndex]
         var topRight = this.gameSteps[rowIndex - 1][colIndex + 1]
@@ -87,7 +85,7 @@ export default class LineAndPointGame {
       // odd
       if(colIndex - 1 >= 0) {
         var leftLeft = this.gameSteps[rowIndex][colIndex - 1]
-        var leftTop = thsi.gameSteps[rowIndex - 1][colIndex - 1]
+        var leftTop = this.gameSteps[rowIndex - 1][colIndex - 1]
         var leftBottom = this.gameSteps[rowIndex + 1][colIndex - 1]
         if(leftLeft != 0 && leftTop != 0 && leftBottom != 0 && 
           leftLeft == leftTop && leftTop == leftBottom && this.whosTurn == leftBottom) {
@@ -108,7 +106,7 @@ export default class LineAndPointGame {
     }
 
     // 判断该谁走
-    if (isSorce) {
+    if (isScore) {
       this.whosTurn = playerId
     }
     else {
@@ -157,6 +155,9 @@ export default class LineAndPointGame {
         x = i % 2 == 0 ? boardLength - 1 : boardLength
       }
       this.gameSteps[i] = new Array(x)
+      for(var j = 0; j < x; j++) {
+        this.gameSteps[i][j] = 0
+      }
     }
   }
 
