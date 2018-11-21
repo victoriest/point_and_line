@@ -21,6 +21,12 @@ export default class Main {
 
   restart() {
     GAME.reset()
+    wx.onSocketOpen(function(data) {console.log(data)})
+    wx.onSocketMessage(function (data) { console.log(data) })
+    wx.onSocketClose(function (data) { console.log(data) })
+    wx.connectSocket({
+      url: 'ws://127.0.0.1:9090/ws'
+    })
     // canvas.removeEventListener(
     //   'touchstart',
     //   this.touchHandler
@@ -74,7 +80,10 @@ export default class Main {
 
     switch (GAME.gameState) {
       case -1:
-        GAME.gameState = 0
+        wx.sendSocketMessage({
+          data: ["estest"],
+        })
+        // GAME.gameState = 0
         break;
       case 0:
         GAME.gameState = 1
