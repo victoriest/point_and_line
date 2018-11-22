@@ -1,14 +1,15 @@
 package logic
 
 import (
+	"container/list"
+	"fmt"
+
+	"../codec"
 	"../protocol"
 	sev "../server"
 	game "./games"
-	"container/list"
-	"fmt"
 	log "github.com/alecthomas/log4go"
 	proto "github.com/golang/protobuf/proto"
-	"net"
 )
 
 var inGameMap = make(map[string]string)
@@ -19,12 +20,17 @@ var joinGameList = list.New()
 
 var gameObjMap = make(map[string]*game.PointAndLineGame)
 
-// 处理消息具体实现
-func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+// TCPHandler 处理消息具体实现
+func TCPHandler(server *sev.Nexus, ipStr string, message interface{}) {
 	log.Debug(message)
-	switch int32(*message.Type) {
+	var messageType int32
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		messageType = int32(*message.(*protocol.MobileSuiteModel).Type)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		messageType = int32(message.(*codec.VictoriestMsg).MsgType)
+	}
+	switch messageType {
 	case int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE_REQ):
-		//server.BroadcastMessage(message)
 		processChatMessage(server, message)
 	case int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_REQ):
 		processLinePoint(server, ipStr, message)
@@ -39,16 +45,16 @@ func TcpHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteMo
 	}
 }
 
-func ConnectedHandler(server *sev.Nexus, conn *net.TCPConn) {
-	ipStr := conn.RemoteAddr().String()
+func ConnectedHandler(server *sev.Nexus, ipStr string) {
+	// ipStr := conn.RemoteAddr().String()
 	str := "A new connection :" + ipStr
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
 	byt, _ := proto.Marshal(chatMsg)
 	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
 }
 
-func DisconnectingHander(server *sev.Nexus, conn *net.TCPConn) {
-	ipStr := conn.RemoteAddr().String()
+func DisconnectingHander(server *sev.Nexus, ipStr string) {
+	// ipStr := conn.RemoteAddr().String()
 	str := "disconnected :" + ipStr
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
 	byt, _ := proto.Marshal(chatMsg)

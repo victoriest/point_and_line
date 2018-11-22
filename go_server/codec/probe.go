@@ -11,12 +11,13 @@ const SEND_BRO_GROUP string = "BRO_GROUP"
 
 const SEND_TO_SERVER string = "TO_SERVER"
 
+// VictoriestMsg 序列化消息结构体
 type VictoriestMsg struct {
 	MsgType    int32
 	MsgContext interface{}
 }
 
-// 序列化接口
+// ISerializable 序列化接口
 type ISerializable interface {
 	/**
 	 * param  : src    - 需要序列化的参数
@@ -24,7 +25,7 @@ type ISerializable interface {
 	 * return : []byte - 序列化后的byte数组
 	 *          error  - 错误信息, 如果成功则为nil
 	 */
-	Serialize(src *VictoriestMsg) ([]byte, error)
+	Serialize(src interface{}) ([]byte, error)
 
 	/**
 	 * param  : src            - 序列化过的对象
@@ -32,5 +33,5 @@ type ISerializable interface {
 	 * return : error          - 错误信息, 如果成功则为nil
 	 *          msgType        - 反序列化后的对象标识
 	 */
-	Deserialize(src []byte, dst *VictoriestMsg) (int32, error)
+	Deserialize(src []byte, dst interface{}) (int32, error)
 }

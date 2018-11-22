@@ -17,7 +17,7 @@ import (
 
 func main() {
 	log.LoadConfiguration("./log4go.config")
-	port, ip, dbPort, account, pwd, schame := readServerPort()
+	port, ip, dbPort, account, pwd, schame, protocolType := readServerPort()
 	dbCon := new(dao.MysqlConnector)
 	iDbPort, _ := strconv.Atoi(dbPort)
 	isConnect := dbCon.Connect(&ip, iDbPort, &account, &pwd, &schame)
@@ -25,20 +25,28 @@ func main() {
 		log.Warn("mysql connect faild")
 		return
 	}
-	server := sev.NewNexus(port, logic.TcpHandler,
+	var pt sev.ProtocolType
+	if protocolType == "tcp" {
+		pt = sev.ProtocolTypeTCP
+	} else {
+		pt = sev.ProtocolTypeWebSocket
+	}
+	server := sev.NewNexus(pt, port, logic.TCPHandler,
 		logic.ConnectedHandler, logic.DisconnectingHander,
 		dbCon)
 	server.Startup()
 }
 
 // 读取配置文件
-func readServerPort() (string, string, string, string, string, string) {
+func readServerPort() (string, string, string, string, string, string, string) {
 	exefile, _ := exec.LookPath(os.Args[0])
 	log.Info(filepath.Dir(exefile))
 	filepath := path.Join(filepath.Dir(exefile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filepath)
 	utils.CheckError(err, true)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
+	utils.CheckError(err, true)
+	protocolType, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.type")
 	utils.CheckError(err, true)
 	ip, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.ip")
 	utils.CheckError(err, true)
@@ -50,5 +58,5 @@ func readServerPort() (string, string, string, string, string, string) {
 	utils.CheckError(err, true)
 	schame, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.schame")
 	utils.CheckError(err, true)
-	return port, ip, dbPort, account, pwd, schame
+	return port, ip, dbPort, account, pwd, schame, protocolType
 }

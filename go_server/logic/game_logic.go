@@ -8,10 +8,13 @@ import (
 	proto "github.com/golang/protobuf/proto"
 )
 
-func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+func processLinePoint(server *sev.Nexus, ipStr string, message interface{}) {
 	to := inGameMap[ipStr]
 	lpDto := &protocol.LineAPointDTO{}
-	proto.Unmarshal(message.Message, lpDto)
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, lpDto)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+	}
 
 	gameObj := gameObjMap[ipStr]
 	if gameObj == nil {
@@ -49,9 +52,13 @@ func processLinePoint(server *sev.Nexus, ipStr string, message *protocol.MobileS
 
 }
 
-func processSearchGame(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+func processSearchGame(server *sev.Nexus, ipStr string, message interface{}) {
 	msg := &protocol.ChatMsg{}
-	proto.Unmarshal(message.Message, msg)
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, msg)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+	}
+
 	log.Info(*msg.ChatContext)
 	ipMappingNick[ipStr] = *msg.ChatContext
 	joinGameList.PushBack(ipStr)
@@ -97,6 +104,6 @@ func processSearchGame(server *sev.Nexus, ipStr string, message *protocol.Mobile
 	}
 }
 
-func processEndGame(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+func processEndGame(server *sev.Nexus, ipStr string, message interface{}) {
 	endGame(server, ipStr)
 }

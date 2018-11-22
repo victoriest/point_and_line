@@ -41,7 +41,7 @@ func testUtil(probe ISerializable, t *testing.T) {
 }
 
 func TestJsonProbe(t *testing.T) {
-	probe := new(JsonProbe)
+	probe := new(JSONProbe)
 	testUtil(probe, t)
 }
 

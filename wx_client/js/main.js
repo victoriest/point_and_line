@@ -17,10 +17,18 @@ export default class Main {
     // 维护当前requestAnimationFrame的id
     this.aniId    = 0
     this.restart()
+
   }
 
   restart() {
     GAME.reset()
+    wx.onSocketOpen(function(data) {console.log(data)})
+    wx.onSocketMessage(function (data) { console.log(data) })
+    wx.onSocketClose(function (data) { console.log(data) })
+    wx.connectSocket({
+      url: 'ws://127.0.0.1:9090/ws'
+    })
+
     // canvas.removeEventListener(
     //   'touchstart',
     //   this.touchHandler
@@ -74,7 +82,20 @@ export default class Main {
 
     switch (GAME.gameState) {
       case -1:
-        GAME.gameState = 0
+
+        protobuf.load("./MobileSuite.json", function (err, root) {
+          if (err) throw err;
+          // Obtain a message type
+          var MobileSuiteModel = root.lookupType("protocol.MobileSuiteModel");
+          var LoginDTO = root.lookupType("protocol.LoginDTO");
+
+          var loginDto = LoginDTO.create({ userId: 1, uName: "est", pwd: "123123" });
+          var ms = { "type": 103, message: loginDto }
+          wx.sendSocketMessage({
+            data: ms,
+          });
+        });
+        // GAME.gameState = 0
         break;
       case 0:
         GAME.gameState = 1

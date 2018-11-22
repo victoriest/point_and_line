@@ -99,7 +99,7 @@ export default class LineAndPointGame {
         var rightBottom = this.gameSteps[rowIndex + 1][colIndex]
         if (rightRight != 0 && rightTop != 0 && rightBottom != 0 && 
           rightRight == rightTop && rightTop == rightBottom && this.whosTurn == rightBottom) {
-          PlusSorce(playerId);
+          this.plusSorce(playerId);
           isSorce = true;
         }
       }

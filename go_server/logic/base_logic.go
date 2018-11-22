@@ -9,9 +9,12 @@ import (
 	//"strconv"
 )
 
-func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+func processCreateUser(server *sev.Nexus, ipStr string, message interface{}) {
 	createUserDto := &protocol.CreateUserDTO{}
-	proto.Unmarshal(message.Message, createUserDto)
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, createUserDto)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+	}
 
 	user := &dao.User{}
 	user.Name = *createUserDto.UName
@@ -37,9 +40,12 @@ func processCreateUser(server *sev.Nexus, ipStr string, message *protocol.Mobile
 }
 
 func processLogin(server *sev.Nexus, ipStr string,
-	message *protocol.MobileSuiteModel) {
+	message interface{}) {
 	loginDto := &protocol.LoginDTO{}
-	proto.Unmarshal(message.Message, loginDto)
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, loginDto)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+	}
 
 	userArr, err := server.DbConnector.QueryByUserName(
 		*loginDto.UName, *loginDto.Pwd)
@@ -69,9 +75,12 @@ func processLogin(server *sev.Nexus, ipStr string,
 		int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
 }
 
-func processChatMessage(server *sev.Nexus, message *protocol.MobileSuiteModel) {
+func processChatMessage(server *sev.Nexus, message interface{}) {
 	chatDto := &protocol.ChatMsg{}
-	proto.Unmarshal(message.Message, chatDto)
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, chatDto)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+	}
 
 	byt, _ := proto.Marshal(chatDto)
 	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))

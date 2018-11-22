@@ -1,0 +1,97 @@
+package protocol;
+
+// protoc MoblieSuiteProtobufProtocol.proto --java_out=../src/
+// protoc MoblieSuiteProtobufProtocol.proto --go_out=../src/
+// protoc MoblieSuiteProtobufProtocol.proto --go_out=../src/
+
+enum MessageType {
+	MSG_TYPE_CHAT_MESSGAE_REQ = 1;		// 聊天信息:消息体为ChatMsg
+	MSG_TYPE_CHAT_MESSAGE_RES = 2;
+
+	MSG_TYPE_SEARCH_A_GAME_REQ = 3;		// 开始寻找一局游戏:消息体为玩家的昵称
+	MSG_TYPE_SEARCH_A_GAME_RES = 4;		// 开始搜寻的返回:0为成功; 非零失败;
+
+	MSG_TYPE_STOP_SEARCH_REQ = 5;		// 放弃搜寻游戏
+	MSG_TYPE_STOP_SEARCH_RES = 6;		// 放弃搜寻结果
+
+	MSG_TYPE_START_RES = 8;				// 开始游戏:消息体为GameStartDTO
+
+	MSG_TYPE_LINE_A_POINT_REQ = 9;		// 连一个线
+	MSG_TYPE_LINE_A_POINT_RES = 10;		
+	MSG_TYPE_LINE_A_POINT_TO_REQUEST_RES = 14;
+
+	MSG_TYPE_END_GAME_REQ = 11;
+	MSG_TYPE_END_GAME_RES = 12;
+
+	MSG_TYPE_CREATE_USER_REQ = 101;		// 创建一个角色
+	MSG_TYPE_CREATE_USER_RES = 102;
+
+	MSG_TYPE_LOGIN_REQ = 103;			// 登陆
+	MSG_TYPE_LOGIN_RES = 104;
+
+	MSG_TYPE_LOGOUT_REQ = 105;			// 登出
+	MSG_TYPE_LOGOUT_RES = 106;
+}
+
+message MobileSuiteModel {
+	required int32 type = 1;
+	optional bytes message = 2;
+}
+
+// 聊天信息对应消息体
+message ChatMsg {
+	required int32 chatType = 1;
+	required int64 userId = 2;
+	required string uName = 3;
+	required string chatContext = 4;
+}
+
+// 开始游戏的信息消息体
+message GameStartDTO {
+	required string opptName = 1;		// 对手昵称	
+	required int32 playerIndex = 2;		// 玩家的先后手
+}
+
+// 连一个线
+message LineAPointDTO {
+	required int32 row = 1;
+	required int32 col = 2;
+	required int32 playerIndex = 3;
+}
+
+// 连线的返回值
+message LineAPointResponseDTO {
+	required int32 result = 1;
+}
+
+// 创建角色
+message CreateUserDTO {
+	required string uName = 1;
+	required string pwd = 2;
+}
+
+// 创建角色返回
+message CreateResultDTO {
+	required int64 userId = 1;
+}
+
+// 登陆
+message LoginDTO {
+	required int64 userId = 1;
+	required string uName = 2;
+	required string pwd = 3;
+}
+
+// 登陆返回
+message LoginResultDTO {
+	required int64 userId = 1;
+	required string uName = 2;
+	required int32 round = 3;
+	required int32 winCount = 4;
+	required int32 rank = 5;
+}
+
+// 退出登陆
+message LogoutDTO {
+	required int64 userId = 1;
+}
