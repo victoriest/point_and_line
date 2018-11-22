@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 
+	"../codec"
 	"../protocol"
 	sev "../server"
 	game "./games"
@@ -20,11 +21,16 @@ var joinGameList = list.New()
 var gameObjMap = make(map[string]*game.PointAndLineGame)
 
 // TCPHandler 处理消息具体实现
-func TCPHandler(server *sev.Nexus, ipStr string, message *protocol.MobileSuiteModel) {
+func TCPHandler(server *sev.Nexus, ipStr string, message interface{}) {
 	log.Debug(message)
-	switch int32(*message.Type) {
+	var messageType int32
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		messageType = int32(*message.(*protocol.MobileSuiteModel).Type)
+	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		messageType = int32(message.(*codec.VictoriestMsg).MsgType)
+	}
+	switch messageType {
 	case int32(protocol.MessageType_MSG_TYPE_CHAT_MESSGAE_REQ):
-		//server.BroadcastMessage(message)
 		processChatMessage(server, message)
 	case int32(protocol.MessageType_MSG_TYPE_LINE_A_POINT_REQ):
 		processLinePoint(server, ipStr, message)

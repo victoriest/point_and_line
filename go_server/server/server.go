@@ -2,6 +2,8 @@ package server
 
 import (
 	"bufio"
+	"encoding/json"
+	"io/ioutil"
 	"net"
 	"net/http"
 
@@ -22,7 +24,7 @@ type INexus interface {
 }
 
 // MessageRecivedHandler 消息处理托管
-type MessageRecivedHandler func(*Nexus, string, *protocol.MobileSuiteModel)
+type MessageRecivedHandler func(*Nexus, string, interface{})
 
 // ConnectionHandler 连接状态处理托管
 type ConnectionHandler func(*Nexus, string)
@@ -39,14 +41,14 @@ const (
 
 // Nexus the net connector struct
 type Nexus struct {
-	protocolType         ProtocolType           // 连接类型(tcp, ws)
+	ProtocolType         ProtocolType           // 连接类型(tcp, ws)
 	port                 string                 // 服务端端口号
 	quitSemaphore        chan bool              // 退出信号量
 	connMap              map[string]interface{} // 客户端连接Map
 	recivedHandler       MessageRecivedHandler  // 消息逻辑处理托管Handler
 	newConnectionHandler ConnectionHandler      // 新连接处理Handler
 	disconnectHandler    ConnectionHandler      // 断开连接处理Handler
-	probe                codec.ProtobufProbe    // 序列化接口
+	probe                interface{}            // 序列化接口
 	DbConnector          *dao.MysqlConnector    // 数据库连接器
 	wsUpgrader           *websocket.Upgrader    // ws服务的管理对象
 }
@@ -57,14 +59,14 @@ func NewNexus(protocolType ProtocolType,
 	connHander ConnectionHandler, disconnHander ConnectionHandler,
 	dbCon *dao.MysqlConnector) *Nexus {
 	nexus := new(Nexus)
-	nexus.protocolType = protocolType
+	nexus.ProtocolType = protocolType
 	nexus.port = port
 	nexus.connMap = make(map[string]interface{})
 	nexus.quitSemaphore = make(chan bool)
 	nexus.recivedHandler = handler
 	nexus.newConnectionHandler = connHander
 	nexus.disconnectHandler = disconnHander
-	nexus.probe = *new(codec.ProtobufProbe)
+	nexus.probe = nil
 	nexus.DbConnector = dbCon
 	nexus.wsUpgrader = nil
 	return nexus
@@ -103,7 +105,9 @@ func (nexus *Nexus) initWsConnectionManager(w http.ResponseWriter, r *http.Reque
 // Startup 启动服务器
 func (nexus *Nexus) Startup() {
 	strAddr := ":" + nexus.port
-	if nexus.protocolType == ProtocolTypeTCP {
+	if nexus.ProtocolType == ProtocolTypeTCP {
+		nexus.probe = *new(codec.ProtobufProbe)
+
 		tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
 		utils.CheckError(err, true)
 
@@ -115,7 +119,7 @@ func (nexus *Nexus) Startup() {
 
 		// TCP连接管理
 		nexus.initTCPConnectionManager(tcpListener)
-	} else if nexus.protocolType == ProtocolTypeWebSocket {
+	} else if nexus.ProtocolType == ProtocolTypeWebSocket {
 		// WebSocket连接管理
 		nexus.wsUpgrader = &websocket.Upgrader{}
 		http.HandleFunc("/ws", nexus.initWsConnectionManager)
@@ -151,7 +155,7 @@ func (nexus *Nexus) tcpPipe(tcpConn net.Conn) {
 	reader := bufio.NewReader(tcpConn)
 
 	for {
-		message, _, err := nexus.probe.DeserializeByReader(reader)
+		message, _, err := nexus.probe.(codec.ProtobufProbe).DeserializeByReader(reader)
 		if err != nil {
 			return
 		}
@@ -172,9 +176,18 @@ func (nexus *Nexus) wsPipe(wsConn *websocket.Conn) {
 	nexus.newConnectionHandler(nexus, ipStr)
 
 	for {
-		_, reader, err := wsConn.NextReader()
-		br := bufio.NewReader(reader)
-		message, _, err := nexus.probe.DeserializeByReader(br)
+		messageType, r, err := wsConn.NextReader()
+		if err != nil {
+			return
+		}
+
+		if messageType != websocket.TextMessage {
+			continue
+		}
+
+		p, err := ioutil.ReadAll(r)
+		var message *codec.VictoriestMsg
+		err = json.Unmarshal(p, message)
 		if err != nil {
 			return
 		}
@@ -183,30 +196,31 @@ func (nexus *Nexus) wsPipe(wsConn *websocket.Conn) {
 }
 
 // BroadcastMessage 全局广播
-func (nexus *Nexus) BroadcastMessage(message *protocol.MobileSuiteModel) {
-	buff, _ := nexus.probe.Serialize(message)
+func (nexus *Nexus) BroadcastMessage(message interface{}) {
 	// 向所有人发话
 	for _, conn := range nexus.connMap {
-		switch nexus.protocolType {
+		switch nexus.ProtocolType {
 		case ProtocolTypeTCP:
+			buff, _ := nexus.probe.(codec.ProtobufProbe).Serialize(message.(*protocol.MobileSuiteModel))
 			conn.(net.Conn).Write(buff)
 		case ProtocolTypeWebSocket:
-			// TODO message type
-			conn.(*websocket.Conn).WriteMessage(1, buff)
+			buff, _ := json.Marshal(message)
+			conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, buff)
 		}
 
 	}
 }
 
 // SendTo 向指定ip发消息
-func (nexus *Nexus) SendTo(sendTo string, message *protocol.MobileSuiteModel) {
-	buff, _ := nexus.probe.Serialize(message)
-	switch nexus.protocolType {
+func (nexus *Nexus) SendTo(sendTo string, message interface{}) {
+	switch nexus.ProtocolType {
 	case ProtocolTypeTCP:
+		buff, _ := nexus.probe.(codec.ProtobufProbe).Serialize(message.(*protocol.MobileSuiteModel))
 		nexus.connMap[sendTo].(net.Conn).Write(buff)
 	case ProtocolTypeWebSocket:
-		// TODO message type
-		nexus.connMap[sendTo].(*websocket.Conn).WriteMessage(1, buff)
+		// TODO BUFF
+		buff, _ := nexus.probe.(codec.ProtobufProbe).Serialize(message.(*protocol.MobileSuiteModel))
+		nexus.connMap[sendTo].(*websocket.Conn).WriteMessage(websocket.TextMessage, buff)
 	}
 }
 

@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
+
 	log "github.com/alecthomas/log4go"
 )
 
-// Gob的序列化实现
+// GobProbe Gob的序列化实现
 type GobProbe struct{}
 
-// gob的序列化方法实现
-func (self GobProbe) Serialize(src *VictoriestMsg) ([]byte, error) {
+// Serialize gob的序列化方法实现
+func (gobProbe *GobProbe) Serialize(src interface{}) ([]byte, error) {
 	// 序列化
 	// vMsg := &VictoriestMsg{MsgType: msgType, MsgContext: src}
 	buf := new(bytes.Buffer)
@@ -23,7 +24,7 @@ func (self GobProbe) Serialize(src *VictoriestMsg) ([]byte, error) {
 	}
 	v := buf.Bytes()
 	// 序列化后的byte长度
-	var length int32 = int32(len(v))
+	var length = int32(len(v))
 
 	// 将长度信息写入byte数组
 	pkg := new(bytes.Buffer)
@@ -43,18 +44,19 @@ func (self GobProbe) Serialize(src *VictoriestMsg) ([]byte, error) {
 	return pkg.Bytes(), nil
 }
 
-// gob的反序列化方法实现
-func (self GobProbe) Deserialize(src []byte, dst *VictoriestMsg) (int32, error) {
+// Deserialize gob的反序列化方法实现
+func (gobProbe *GobProbe) Deserialize(src []byte, dst interface{}) (int32, error) {
+	var dstObj = dst.(*VictoriestMsg)
 	// msg 序列化后的对象
 	msg := src[4:]
 	buf := bytes.NewBuffer(msg)
 	dec := gob.NewDecoder(buf)
-	err := dec.Decode(&dst)
+	err := dec.Decode(&dstObj)
 	if err != nil {
 		log.Error("when GobProbe.Deserialize:", err.Error())
 		println("when GobProbe.Deserialize:", err.Error())
 		return -1, err
 	}
 
-	return dst.MsgType, nil
+	return dstObj.MsgType, nil
 }

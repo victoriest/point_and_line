@@ -1,10 +1,11 @@
 package codec
 
 import (
-	"../protocol"
 	"bufio"
 	"bytes"
 	"encoding/binary"
+
+	"../protocol"
 	log "github.com/alecthomas/log4go"
 	proto "github.com/golang/protobuf/proto"
 )
