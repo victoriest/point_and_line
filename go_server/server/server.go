@@ -3,7 +3,6 @@ package server
 import (
 	"bufio"
 	"encoding/json"
-	"io/ioutil"
 	"net"
 	"net/http"
 
@@ -163,6 +162,11 @@ func (nexus *Nexus) tcpPipe(tcpConn net.Conn) {
 	}
 }
 
+var (
+	newline = []byte{'\n'}
+	space   = []byte{' '}
+)
+
 // wsPipe 分派客户端长连接协程 一客户端一协程
 func (nexus *Nexus) wsPipe(wsConn *websocket.Conn) {
 	ipStr := wsConn.RemoteAddr().String()
@@ -176,20 +180,24 @@ func (nexus *Nexus) wsPipe(wsConn *websocket.Conn) {
 	nexus.newConnectionHandler(nexus, ipStr)
 
 	for {
-		messageType, r, err := wsConn.NextReader()
+		messageType, p, err := wsConn.ReadMessage()
+		log.Info("read message: %d", messageType)
 		if err != nil {
-			return
+			log.Warn("read message err: ", err)
+			break
 		}
 
 		if messageType != websocket.TextMessage {
 			continue
 		}
 
-		p, err := ioutil.ReadAll(r)
-		var message *codec.VictoriestMsg
+		message := &codec.VictoriestMsg{}
+		strr := string(p)
+		log.Info(strr)
 		err = json.Unmarshal(p, message)
 		if err != nil {
-			return
+			log.Warn("json Unmarshal err: ", err)
+			break
 		}
 		nexus.recivedHandler(nexus, ipStr, message)
 	}
@@ -219,7 +227,7 @@ func (nexus *Nexus) SendTo(sendTo string, message interface{}) {
 		nexus.connMap[sendTo].(net.Conn).Write(buff)
 	case ProtocolTypeWebSocket:
 		// TODO BUFF
-		buff, _ := nexus.probe.(codec.ProtobufProbe).Serialize(message.(*protocol.MobileSuiteModel))
+		buff, _ := json.Marshal(message.(*codec.VictoriestMsg))
 		nexus.connMap[sendTo].(*websocket.Conn).WriteMessage(websocket.TextMessage, buff)
 	}
 }

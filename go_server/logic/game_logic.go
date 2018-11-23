@@ -1,6 +1,9 @@
 package logic
 
 import (
+	"encoding/json"
+
+	"../codec"
 	"../protocol"
 	sev "../server"
 	"./games"
@@ -14,6 +17,8 @@ func processLinePoint(server *sev.Nexus, ipStr string, message interface{}) {
 	if server.ProtocolType == sev.ProtocolTypeTCP {
 		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, lpDto)
 	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		bodyBytes, _ := json.Marshal(message.(*codec.VictoriestMsg).MsgContext)
+		json.Unmarshal(bodyBytes, &lpDto)
 	}
 
 	gameObj := gameObjMap[ipStr]
@@ -57,6 +62,8 @@ func processSearchGame(server *sev.Nexus, ipStr string, message interface{}) {
 	if server.ProtocolType == sev.ProtocolTypeTCP {
 		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, msg)
 	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		bodyBytes, _ := json.Marshal(message.(*codec.VictoriestMsg).MsgContext)
+		json.Unmarshal(bodyBytes, &msg)
 	}
 
 	log.Info(*msg.ChatContext)
@@ -65,41 +72,45 @@ func processSearchGame(server *sev.Nexus, ipStr string, message interface{}) {
 
 	// 如果人多了 就开一场游戏
 	if joinGameList.Len() >= 2 {
-		jgIp1 := joinGameList.Front()
-		strIp1 := jgIp1.Value.(string)
-		joinGameList.Remove(jgIp1)
+		jgIP1 := joinGameList.Front()
+		strIP1 := jgIP1.Value.(string)
+		joinGameList.Remove(jgIP1)
 
-		if !server.ConnectionIsOpen(strIp1) {
+		if !server.ConnectionIsOpen(strIP1) {
 			return
 		}
 
-		jgIp2 := joinGameList.Front()
-		strIp2 := jgIp2.Value.(string)
-		joinGameList.Remove(jgIp2)
+		jgIP2 := joinGameList.Front()
+		strIP2 := jgIP2.Value.(string)
+		joinGameList.Remove(jgIP2)
 
-		if !server.ConnectionIsOpen(strIp2) {
+		if !server.ConnectionIsOpen(strIP2) {
 			return
 		}
 
-		inGameMap[strIp1] = strIp2
-		inGameMap[strIp2] = strIp1
+		inGameMap[strIP1] = strIP2
+		inGameMap[strIP2] = strIP1
 		gameObj := games.NewPointAndLineGame(2)
-		gameObjMap[strIp1] = gameObj
-		gameObjMap[strIp2] = gameObj
+		gameObjMap[strIP1] = gameObj
+		gameObjMap[strIP2] = gameObj
 
 		gsDto1 := &protocol.GameStartDTO{
-			OpptName:    proto.String(ipMappingNick[strIp2]),
+			OpptName:    proto.String(ipMappingNick[strIP2]),
 			PlayerIndex: proto.Int32(1),
 		}
-		byt1, _ := proto.Marshal(gsDto1)
-		sendBack(server, strIp1, byt1, int32(protocol.MessageType_MSG_TYPE_START_RES))
+		resp, _ := genResponseDTO(server, gsDto1, int32(protocol.MessageType_MSG_TYPE_START_RES))
+		server.SendTo(strIP1, resp)
+		// byt1, _ := proto.Marshal(gsDto1)
+		// sendBack(server, strIP1, byt1, int32(protocol.MessageType_MSG_TYPE_START_RES))
 
 		gsDto2 := &protocol.GameStartDTO{
-			OpptName:    proto.String(ipMappingNick[strIp1]),
+			OpptName:    proto.String(ipMappingNick[strIP1]),
 			PlayerIndex: proto.Int32(2),
 		}
-		byt2, _ := proto.Marshal(gsDto2)
-		sendBack(server, strIp2, byt2, int32(protocol.MessageType_MSG_TYPE_START_RES))
+		resp, _ = genResponseDTO(server, gsDto2, int32(protocol.MessageType_MSG_TYPE_START_RES))
+		server.SendTo(strIP2, resp)
+		// byt2, _ := proto.Marshal(gsDto2)
+		// sendBack(server, strIP2, byt2, int32(protocol.MessageType_MSG_TYPE_START_RES))
 
 	}
 }

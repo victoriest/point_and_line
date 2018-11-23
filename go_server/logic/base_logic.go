@@ -1,6 +1,9 @@
 package logic
 
 import (
+	"encoding/json"
+
+	"../codec"
 	"../dao"
 	"../protocol"
 	sev "../server"
@@ -14,6 +17,8 @@ func processCreateUser(server *sev.Nexus, ipStr string, message interface{}) {
 	if server.ProtocolType == sev.ProtocolTypeTCP {
 		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, createUserDto)
 	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		bodyBytes, _ := json.Marshal(message.(*codec.VictoriestMsg).MsgContext)
+		json.Unmarshal(bodyBytes, &createUserDto)
 	}
 
 	user := &dao.User{}
@@ -26,17 +31,20 @@ func processCreateUser(server *sev.Nexus, ipStr string, message interface{}) {
 	result, err := server.DbConnector.Insert(user)
 	if err != nil {
 		log.Info(err)
-		sendBack(server, ipStr, nil,
-			int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES))
+		resp, _ := genResponseDTO(server, nil, int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES))
+		server.SendTo(ipStr, resp)
+		// sendBack(server, ipStr, nil,
+		// 	int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES))
 		return
 	}
 	createResult := &protocol.CreateResultDTO{
 		UserId: proto.Int64(int64(result)),
 	}
-	byt, _ := proto.Marshal(createResult)
-
-	sendBack(server, ipStr, byt,
-		int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES))
+	resp, _ := genResponseDTO(server, createResult, int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES))
+	server.SendTo(ipStr, resp)
+	// byt, _ := proto.Marshal(createResult)
+	// sendBack(server, ipStr, byt,
+	// 	int32(protocol.MessageType_MSG_TYPE_CREATE_USER_RES))
 }
 
 func processLogin(server *sev.Nexus, ipStr string,
@@ -45,13 +53,17 @@ func processLogin(server *sev.Nexus, ipStr string,
 	if server.ProtocolType == sev.ProtocolTypeTCP {
 		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, loginDto)
 	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		bodyBytes, _ := json.Marshal(message.(*codec.VictoriestMsg).MsgContext)
+		json.Unmarshal(bodyBytes, &loginDto)
 	}
 
 	userArr, err := server.DbConnector.QueryByUserName(
 		*loginDto.UName, *loginDto.Pwd)
 	if err != nil || userArr == nil || len(userArr) < 1 {
-		sendBack(server, ipStr, nil,
-			int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+		resp, _ := genResponseDTO(server, nil, int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+		server.SendTo(ipStr, resp)
+		// sendBack(server, ipStr, nil,
+		// 	int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
 		return
 	}
 
@@ -70,9 +82,12 @@ func processLogin(server *sev.Nexus, ipStr string,
 	loginResultDto.WinCount = proto.Int32(int32(user.WinCount))
 	loginResultDto.Rank = proto.Int32(int32(user.Rank))
 
-	byt, _ := proto.Marshal(loginResultDto)
-	sendBack(server, ipStr, byt,
-		int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+	// byt, _ := proto.Marshal(loginResultDto)
+	// sendBack(server, ipStr, byt,
+	// 	int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+
+	response, _ := genResponseDTO(server, loginResultDto, int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+	server.SendTo(ipStr, response)
 }
 
 func processChatMessage(server *sev.Nexus, message interface{}) {
@@ -80,8 +95,32 @@ func processChatMessage(server *sev.Nexus, message interface{}) {
 	if server.ProtocolType == sev.ProtocolTypeTCP {
 		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, chatDto)
 	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
+		bodyBytes, _ := json.Marshal(message.(*codec.VictoriestMsg).MsgContext)
+		json.Unmarshal(bodyBytes, &chatDto)
 	}
+	resp, _ := genResponseDTO(server, chatDto, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+	server.BroadcastMessage(resp)
+	// byt, _ := proto.Marshal(chatDto)
+	// broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+}
 
-	byt, _ := proto.Marshal(chatDto)
-	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+func genResponseDTO(server *sev.Nexus, response interface{}, messageType int32) (interface{}, error) {
+	if server.ProtocolType == sev.ProtocolTypeTCP {
+		var resByte []byte
+		if response != nil {
+			resByte, _ = proto.Marshal(response.(proto.Message))
+		}
+		resDtoMsg := &protocol.MobileSuiteModel{
+			Type: proto.Int32(messageType),
+		}
+		if len(resByte) > 0 {
+			resDtoMsg.Message = resByte
+		}
+		return resDtoMsg, nil
+	}
+	resDtoMsg := &codec.VictoriestMsg{
+		MsgType:    messageType,
+		MsgContext: response,
+	}
+	return resDtoMsg, nil
 }

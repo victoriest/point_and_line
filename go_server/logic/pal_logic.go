@@ -2,7 +2,6 @@ package logic
 
 import (
 	"container/list"
-	"fmt"
 
 	"../codec"
 	"../protocol"
@@ -49,54 +48,59 @@ func ConnectedHandler(server *sev.Nexus, ipStr string) {
 	// ipStr := conn.RemoteAddr().String()
 	str := "A new connection :" + ipStr
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
-	byt, _ := proto.Marshal(chatMsg)
-	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+	resp, _ := genResponseDTO(server, chatMsg, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+	server.BroadcastMessage(resp)
+	// byt, _ := proto.Marshal(chatMsg)
+	// broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
 }
 
 func DisconnectingHander(server *sev.Nexus, ipStr string) {
 	// ipStr := conn.RemoteAddr().String()
 	str := "disconnected :" + ipStr
 	chatMsg := &protocol.ChatMsg{ChatContext: &str}
-	byt, _ := proto.Marshal(chatMsg)
+	resp, _ := genResponseDTO(server, chatMsg, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+	server.BroadcastMessage(resp)
 	endGame(server, ipStr)
-	broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
+	// byt, _ := proto.Marshal(chatMsg)
+	// broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
 
 }
 
 func endGame(server *sev.Nexus, ipStr string) {
-	opptIpStr, hasKey := inGameMap[ipStr]
+	opptIPStr, hasKey := inGameMap[ipStr]
 	if !hasKey {
 		return
 	}
 	logoutDto := &protocol.LogoutDTO{UserId: proto.Int64(1)}
-	byt, _ := proto.Marshal(logoutDto)
-	sendBack(server, opptIpStr, byt, int32(protocol.MessageType_MSG_TYPE_END_GAME_RES))
-	fmt.Println(opptIpStr)
-	delete(ipMappingNick, opptIpStr)
+	resp, _ := genResponseDTO(server, logoutDto, int32(protocol.MessageType_MSG_TYPE_END_GAME_RES))
+	server.SendTo(opptIPStr, resp)
+	// byt, _ := proto.Marshal(logoutDto)
+	// sendBack(server, opptIpStr, byt, int32(protocol.MessageType_MSG_TYPE_END_GAME_RES))
+	delete(ipMappingNick, opptIPStr)
 	delete(ipMappingNick, ipStr)
-	delete(inGameMap, opptIpStr)
+	delete(inGameMap, opptIPStr)
 	delete(inGameMap, ipStr)
 	delete(gameObjMap, ipStr)
-	delete(gameObjMap, opptIpStr)
+	delete(gameObjMap, opptIPStr)
 }
 
-func sendBack(server *sev.Nexus, ipStr string, byt []byte, msgType int32) {
-	lpDtoMsg := &protocol.MobileSuiteModel{
-		Type: proto.Int32(msgType),
-	}
-	if len(byt) > 0 {
-		lpDtoMsg.Message = byt
-	}
-	server.SendTo(ipStr, lpDtoMsg)
-}
+// func sendBack(server *sev.Nexus, ipStr string, byt []byte, msgType int32) {
+// 	lpDtoMsg := &protocol.MobileSuiteModel{
+// 		Type: proto.Int32(msgType),
+// 	}
+// 	if len(byt) > 0 {
+// 		lpDtoMsg.Message = byt
+// 	}
+// 	server.SendTo(ipStr, lpDtoMsg)
+// }
 
-func broBack(server *sev.Nexus, byt []byte, msgType int32) {
-	broMsg := &protocol.MobileSuiteModel{
-		Type:    proto.Int32(msgType),
-		Message: byt,
-	}
-	if len(byt) > 0 {
-		broMsg.Message = byt
-	}
-	server.BroadcastMessage(broMsg)
-}
+// func broBack(server *sev.Nexus, byt []byte, msgType int32) {
+// 	broMsg := &protocol.MobileSuiteModel{
+// 		Type:    proto.Int32(msgType),
+// 		Message: byt,
+// 	}
+// 	if len(byt) > 0 {
+// 		broMsg.Message = byt
+// 	}
+// 	server.BroadcastMessage(broMsg)
+// }

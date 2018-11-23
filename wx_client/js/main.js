@@ -82,19 +82,19 @@ export default class Main {
 
     switch (GAME.gameState) {
       case -1:
-
-        protobuf.load("./MobileSuite.json", function (err, root) {
-          if (err) throw err;
-          // Obtain a message type
-          var MobileSuiteModel = root.lookupType("protocol.MobileSuiteModel");
-          var LoginDTO = root.lookupType("protocol.LoginDTO");
-
-          var loginDto = LoginDTO.create({ userId: 1, uName: "est", pwd: "123123" });
-          var ms = { "type": 103, message: loginDto }
-          wx.sendSocketMessage({
-            data: ms,
-          });
+        var jsonObj = JSON.stringify({
+            'MsgType': 103,
+            'MsgContext': {
+              userId: 1,
+              uName: 'est',
+              pwd: '1231323'
+            }
         });
+        console.log(jsonObj);
+        wx.sendSocketMessage({
+          data: jsonObj
+        });
+
         // GAME.gameState = 0
         break;
       case 0:
