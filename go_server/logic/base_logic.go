@@ -27,6 +27,7 @@ func processCreateUser(server *sev.Nexus, ipStr string, message interface{}) {
 	user.WinCount = 0
 	user.Rank = 0
 	user.Pwd = *createUserDto.Pwd
+	user.OpenId = *createUserDto.UName
 
 	result, err := server.DbConnector.Insert(user)
 	if err != nil {
@@ -50,21 +51,42 @@ func processCreateUser(server *sev.Nexus, ipStr string, message interface{}) {
 func processLogin(server *sev.Nexus, ipStr string,
 	message interface{}) {
 	loginDto := &protocol.LoginDTO{}
+	var user *dao.User
 	if server.ProtocolType == sev.ProtocolTypeTCP {
 		proto.Unmarshal(message.(*protocol.MobileSuiteModel).Message, loginDto)
+		userArr, err := server.DbConnector.QueryByUserName(
+			*loginDto.UName, *loginDto.Pwd)
+		if err != nil || userArr == nil || len(userArr) < 1 {
+			resp, _ := genResponseDTO(server, nil, int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+			server.SendTo(ipStr, resp)
+			// sendBack(server, ipStr, nil,
+			// 	int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
+			return
+		}
+		user = &userArr[0]
 	} else if server.ProtocolType == sev.ProtocolTypeWebSocket {
 		bodyBytes, _ := json.Marshal(message.(*codec.VictoriestMsg).MsgContext)
-		json.Unmarshal(bodyBytes, &loginDto)
-	}
+		json.Unmarshal(bodyBytes, loginDto)
+		// OPENID相关处理逻辑
+		log.Info(*loginDto.UName)
+		userArr, err := server.DbConnector.QueryByOpenId(*loginDto.UName)
+		if err != nil || userArr == nil || len(userArr) < 1 {
+			// TODO 如果没有用户 就创建一个
+			user := &dao.User{}
+			user.Name = *loginDto.UName
+			user.Round = 0
+			user.WinCount = 0
+			user.Rank = 0
+			user.Pwd = *loginDto.Pwd
+			user.OpenId = *loginDto.UName
+			result, _ := server.DbConnector.Insert(user)
+			user.Id = result
+		} else {
+			user = &userArr[0]
 
-	userArr, err := server.DbConnector.QueryByUserName(
-		*loginDto.UName, *loginDto.Pwd)
-	if err != nil || userArr == nil || len(userArr) < 1 {
-		resp, _ := genResponseDTO(server, nil, int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
-		server.SendTo(ipStr, resp)
-		// sendBack(server, ipStr, nil,
-		// 	int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))
-		return
+			log.Info(&userArr[0])
+			log.Info(user)
+		}
 	}
 
 	//loginResultDto := &protocol.LoginResultDTO{}
@@ -72,16 +94,14 @@ func processLogin(server *sev.Nexus, ipStr string,
 	//strName := strconv.FormatInt(*loginResultDto.UserId, 10)
 	//loginResultDto.UName = &strName
 
-	user := dao.User(userArr[0])
-
 	// 登陆成功
 	loginResultDto := &protocol.LoginResultDTO{}
 	loginResultDto.UserId = proto.Int64(user.Id)
-	loginResultDto.UName = &user.Name
+	loginResultDto.UName = &(user.Name)
 	loginResultDto.Round = proto.Int32(int32(user.Round))
 	loginResultDto.WinCount = proto.Int32(int32(user.WinCount))
 	loginResultDto.Rank = proto.Int32(int32(user.Rank))
-
+	log.Info(loginResultDto)
 	// byt, _ := proto.Marshal(loginResultDto)
 	// sendBack(server, ipStr, byt,
 	// 	int32(protocol.MessageType_MSG_TYPE_LOGIN_RES))

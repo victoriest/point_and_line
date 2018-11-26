@@ -7,4 +7,5 @@ type User struct {
 	WinCount int
 	Rank     int
 	Pwd      string
+	OpenId   string
 }

@@ -50,13 +50,15 @@ type Nexus struct {
 	probe                interface{}            // 序列化接口
 	DbConnector          *dao.MysqlConnector    // 数据库连接器
 	wsUpgrader           *websocket.Upgrader    // ws服务的管理对象
+	appid                string
+	secret               string
 }
 
 // NewNexus create a net connector
 func NewNexus(protocolType ProtocolType,
 	port string, handler MessageRecivedHandler,
 	connHander ConnectionHandler, disconnHander ConnectionHandler,
-	dbCon *dao.MysqlConnector) *Nexus {
+	dbCon *dao.MysqlConnector, appid string, secret string) *Nexus {
 	nexus := new(Nexus)
 	nexus.ProtocolType = protocolType
 	nexus.port = port
@@ -68,6 +70,8 @@ func NewNexus(protocolType ProtocolType,
 	nexus.probe = nil
 	nexus.DbConnector = dbCon
 	nexus.wsUpgrader = nil
+	nexus.appid = appid
+	nexus.secret = secret
 	return nexus
 }
 
@@ -101,6 +105,10 @@ func (nexus *Nexus) initWsConnectionManager(w http.ResponseWriter, r *http.Reque
 	go nexus.wsPipe(wsConn)
 }
 
+func (nexus *Nexus) getWxSession(w http.ResponseWriter, r *http.Request) {
+
+}
+
 // Startup 启动服务器
 func (nexus *Nexus) Startup() {
 	strAddr := ":" + nexus.port
@@ -122,6 +130,7 @@ func (nexus *Nexus) Startup() {
 		// WebSocket连接管理
 		nexus.wsUpgrader = &websocket.Upgrader{}
 		http.HandleFunc("/ws", nexus.initWsConnectionManager)
+		// http.HandleFunc("/ws", nexus.getWxSession)
 		err := http.ListenAndServe(strAddr, nil)
 		utils.CheckError(err, true)
 	}
@@ -215,7 +224,6 @@ func (nexus *Nexus) BroadcastMessage(message interface{}) {
 			buff, _ := json.Marshal(message)
 			conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, buff)
 		}
-
 	}
 }
 

@@ -9,6 +9,8 @@ import LineAndPointGame from './lineAndPointGame'
 let CTX   = canvas.getContext('2d')
 let GAME = new LineAndPointGame()
 
+var openId, sessionKey
+
 /**
  * 游戏主函数
  */
@@ -17,14 +19,62 @@ export default class Main {
     // 维护当前requestAnimationFrame的id
     this.aniId    = 0
     this.restart()
-
   }
 
   restart() {
     GAME.reset()
-    wx.onSocketOpen(function(data) {console.log(data)})
+
+    wx.onSocketOpen(function(res) {
+      console.log("onSocketOpen: " + res)
+      // TODO 登录/注册
+      wx.login({
+        success: function (resp) {
+          if (resp.code) {
+            console.log(resp.code)
+            wx.request({
+              url: 'https://api.weixin.qq.com/sns/jscode2session',
+              data: {
+                appid: 'xxx',
+                secret: 'xxx',
+                js_code: resp.code,
+                grant_type: ''
+              },
+              success(res) {
+                console.log(res.data)
+                openId = res.data.openid
+                sessionKey = res.data.session_key
+
+                var jsonObj = JSON.stringify({
+                  'MsgType': 103,
+                  'MsgContext': {
+                    userId: 1,
+                    uName: res.data.openid,
+                    pwd: res.data.session_key
+                  }
+                });
+                console.log(jsonObj);
+                wx.sendSocketMessage({
+                  data: jsonObj
+                });
+
+              }
+            })
+          } else {
+            console.log(resp.errMsg)
+          }
+        }
+      })
+    })
+
+    wx.onSocketError(function (res) {
+      console.log("onSocketError: " + res)
+    })
+
+    wx.onSocketClose(function (res) {
+      console.log("onSocketClose: " + res)
+    })
+
     wx.onSocketMessage(function (data) { console.log(data) })
-    wx.onSocketClose(function (data) { console.log(data) })
     wx.connectSocket({
       url: 'ws://127.0.0.1:9090/ws'
     })
@@ -82,19 +132,6 @@ export default class Main {
 
     switch (GAME.gameState) {
       case -1:
-        var jsonObj = JSON.stringify({
-            'MsgType': 103,
-            'MsgContext': {
-              userId: 1,
-              uName: 'est',
-              pwd: '1231323'
-            }
-        });
-        console.log(jsonObj);
-        wx.sendSocketMessage({
-          data: jsonObj
-        });
-
         // GAME.gameState = 0
         break;
       case 0:

@@ -2,17 +2,18 @@ package dao
 
 import (
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
 	"strconv"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type MysqlConnector struct {
 	connection *sql.DB
 }
 
-func (self *MysqlConnector) Connect(ip *string, port int,
+func (connector *MysqlConnector) Connect(ip *string, port int,
 	account *string, pwd *string, schame *string) bool {
-	if self.connection != nil {
+	if connector.connection != nil {
 		return false
 	}
 	uri := *account + ":" + *pwd + "@tcp(" +
@@ -22,71 +23,71 @@ func (self *MysqlConnector) Connect(ip *string, port int,
 	if db == nil || err != nil {
 		return false
 	}
-	self.connection = db
+	connector.connection = db
 	return true
 }
 
-func (self *MysqlConnector) IsClose() bool {
-	err := self.connection.Ping()
+func (connector *MysqlConnector) IsClose() bool {
+	err := connector.connection.Ping()
 	if err != nil {
 		return true
 	}
 	return false
 }
 
-func (self *MysqlConnector) Close() bool {
-	err := self.connection.Close()
+func (connector *MysqlConnector) Close() bool {
+	err := connector.connection.Close()
 	if err != nil {
 		return false
 	}
 	return true
 }
 
-// 添加用户
-func (self *MysqlConnector) Insert(user *User) (int64, error) {
-	err := self.connection.Ping()
+// Insert 添加用户
+func (connector *MysqlConnector) Insert(user *User) (int64, error) {
+	err := connector.connection.Ping()
 	if err != nil {
 		return -1, err
 	}
-	result, err := self.connection.Exec(
-		"INSERT INTO user(`uname`,`round`,`win_count`,`rank`,`pwd`) VALUES ('" +
+	result, err := connector.connection.Exec(
+		"INSERT INTO user(`uname`,`round`,`win_count`,`rank`,`pwd`, `open_id`) VALUES ('" +
 			user.Name + "'," + strconv.Itoa(user.Round) + "," +
 			strconv.Itoa(user.WinCount) + "," + strconv.Itoa(user.Rank) +
-			",'" + user.Pwd + "')")
+			",'" + user.Pwd + "','" + user.OpenId + "')")
 	if err != nil {
 		return -1, err
 	}
-	userId, _ := result.LastInsertId()
-	return userId, err
+	userID, _ := result.LastInsertId()
+	return userID, err
 }
 
-// 根据ID查询
-func (self *MysqlConnector) QueryByUserId(userId int64) ([]User, error) {
-	err := self.connection.Ping()
+// QueryByUserId 根据ID查询
+func (connector *MysqlConnector) QueryByUserId(userID int64) ([]User, error) {
+	err := connector.connection.Ping()
 	if err != nil {
 		return nil, err
 	}
-	result, err := self.connection.Query("SELECT * FROM user WHERE id=" +
-		strconv.Itoa(int(userId)))
+	result, err := connector.connection.Query("SELECT * FROM user WHERE id=" +
+		strconv.Itoa(int(userID)))
 	defer result.Close()
 
 	users := []User{}
 	for result.Next() {
 		u := new(User)
-		result.Scan(&u.Id, &u.Name, &u.Round, &u.WinCount, &u.Rank, &u.Pwd)
+		result.Scan(&u.Id, &u.Name, &u.Round, &u.WinCount, &u.Rank, &u.Pwd, &u.OpenId)
 		users = append(users, *u)
 	}
 	return users, nil
 }
 
-// 根据用户名查询
-func (self *MysqlConnector) QueryByUserName(userName string,
+// QueryByUserName 根据用户名查询
+func (connector *MysqlConnector) QueryByUserName(userName string,
 	pwd string) ([]User, error) {
-	err := self.connection.Ping()
+	err := connector.connection.Ping()
 	if err != nil {
 		return nil, err
 	}
-	result, err := self.connection.Query("SELECT * FROM user WHERE uname='" +
+	result, err := connector.connection.Query("SELECT * FROM user WHERE uname='" +
 		userName + "' AND pwd='" + pwd + "'")
 	defer result.Close()
 	if result == nil || err != nil {
@@ -95,7 +96,8 @@ func (self *MysqlConnector) QueryByUserName(userName string,
 	users := []User{}
 	for result.Next() {
 		u := new(User)
-		result.Scan(&u.Id, &u.Name, &u.Round, &u.WinCount, &u.Rank)
+		var p string
+		result.Scan(&(u.Id), &(u.Name), &(u.Round), &(u.WinCount), &(u.Rank), &p, &(u.OpenId))
 		users = append(users, *u)
 	}
 	if len(users) < 1 {
@@ -104,29 +106,54 @@ func (self *MysqlConnector) QueryByUserName(userName string,
 	return users, nil
 }
 
-// 更新用户数据
-func (self *MysqlConnector) Update(user *User) (int, error) {
-	err := self.connection.Ping()
+// QueryByOpenId 根据用户名查询
+func (connector *MysqlConnector) QueryByOpenId(openId string) ([]User, error) {
+	err := connector.connection.Ping()
+	if err != nil {
+		return nil, err
+	}
+	result, err := connector.connection.Query("SELECT * FROM user WHERE open_id='" +
+		openId + "'")
+	defer result.Close()
+	if result == nil || err != nil {
+		return nil, err
+	}
+	users := []User{}
+	for result.Next() {
+		u := new(User)
+		var p string
+		result.Scan(&(u.Id), &(u.Name), &(u.Round), &(u.WinCount), &(u.Rank), &p, &(u.OpenId))
+		users = append(users, *u)
+	}
+	if len(users) < 1 {
+		return nil, nil
+	}
+	return users, nil
+}
+
+// Update 更新用户数据
+func (connector *MysqlConnector) Update(user *User) (int, error) {
+	err := connector.connection.Ping()
 	if err != nil {
 		return -1, err
 	}
 	var base int
-	userId := strconv.FormatInt(user.Id, base)
-	_, err = self.connection.Exec("UPDATE user SET name='" +
+	userID := strconv.FormatInt(user.Id, base)
+	_, err = connector.connection.Exec("UPDATE user SET name='" +
 		user.Name + "', round=" + strconv.Itoa(user.Round) +
 		", win_count=" + strconv.Itoa(user.WinCount) +
-		", pwd=" + user.Pwd + ", rank= WHERE id=" + userId)
+		", pwd=" + user.Pwd + ", open_id=" + user.OpenId + ", rank= WHERE id=" + userID)
 	return 0, err
 }
 
-// 删除用户
-func (self *MysqlConnector) Delete(userId int) (int, error) {
-	err := self.connection.Ping()
+// Delete 删除用户
+func (connector *MysqlConnector) Delete(userID int) (int, error) {
+	err := connector.connection.Ping()
 	if err != nil {
 		return -1, err
 	}
-	_, err = self.connection.Exec("DELETE FROM user WHERE id=" +
-		strconv.Itoa(userId))
+	_, err = connector.connection.Exec("DELETE FROM user WHERE id=" +
+		strconv.Itoa(userID))
 	return 0, err
 
 }

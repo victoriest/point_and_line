@@ -63,7 +63,6 @@ func DisconnectingHander(server *sev.Nexus, ipStr string) {
 	endGame(server, ipStr)
 	// byt, _ := proto.Marshal(chatMsg)
 	// broBack(server, byt, int32(protocol.MessageType_MSG_TYPE_CHAT_MESSAGE_RES))
-
 }
 
 func endGame(server *sev.Nexus, ipStr string) {
