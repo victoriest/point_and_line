@@ -6,10 +6,10 @@ import (
 	"net"
 	"net/http"
 
-	log "github.com/alecthomas/log4go"
 	"github.com/gorilla/websocket"
 	"go_server/codec"
 	"go_server/dao"
+	"go_server/log"
 	"go_server/protocol"
 	"go_server/utils"
 )
@@ -22,8 +22,8 @@ type INexus interface {
 	Shutdown()
 }
 
-// MessageRecivedHandler 消息处理托管
-type MessageRecivedHandler func(*Nexus, string, interface{})
+// MessageReceivedHandler 消息处理托管
+type MessageReceivedHandler func(*Nexus, string, interface{})
 
 // ConnectionHandler 连接状态处理托管
 type ConnectionHandler func(*Nexus, string)
@@ -44,7 +44,7 @@ type Nexus struct {
 	port                 string                 // 服务端端口号
 	quitSemaphore        chan bool              // 退出信号量
 	connMap              map[string]interface{} // 客户端连接Map
-	recivedHandler       MessageRecivedHandler  // 消息逻辑处理托管Handler
+	receivedHandler       MessageReceivedHandler  // 消息逻辑处理托管Handler
 	newConnectionHandler ConnectionHandler      // 新连接处理Handler
 	disconnectHandler    ConnectionHandler      // 断开连接处理Handler
 	probe                interface{}            // 序列化接口
@@ -56,7 +56,7 @@ type Nexus struct {
 
 // NewNexus create a net connector
 func NewNexus(protocolType ProtocolType,
-	port string, handler MessageRecivedHandler,
+	port string, handler MessageReceivedHandler,
 	connHander ConnectionHandler, disconnHander ConnectionHandler,
 	dbCon *dao.MysqlConnector, appid string, secret string) *Nexus {
 	nexus := new(Nexus)
@@ -64,7 +64,7 @@ func NewNexus(protocolType ProtocolType,
 	nexus.port = port
 	nexus.connMap = make(map[string]interface{})
 	nexus.quitSemaphore = make(chan bool)
-	nexus.recivedHandler = handler
+	nexus.receivedHandler = handler
 	nexus.newConnectionHandler = connHander
 	nexus.disconnectHandler = disconnHander
 	nexus.probe = nil
@@ -167,7 +167,7 @@ func (nexus *Nexus) tcpPipe(tcpConn net.Conn) {
 		if err != nil {
 			return
 		}
-		nexus.recivedHandler(nexus, ipStr, message)
+		nexus.receivedHandler(nexus, ipStr, message)
 	}
 }
 
@@ -208,7 +208,7 @@ func (nexus *Nexus) wsPipe(wsConn *websocket.Conn) {
 			log.Warn("json Unmarshal err: ", err)
 			break
 		}
-		nexus.recivedHandler(nexus, ipStr, message)
+		nexus.receivedHandler(nexus, ipStr, message)
 	}
 }
 

@@ -3,9 +3,9 @@ package logic
 import (
 	"container/list"
 
-	log "github.com/alecthomas/log4go"
 	proto "github.com/golang/protobuf/proto"
 	"go_server/codec"
+	"go_server/log"
 	game "go_server/logic/games"
 	"go_server/protocol"
 	sev "go_server/server"

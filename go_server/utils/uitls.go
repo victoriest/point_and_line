@@ -1,8 +1,8 @@
 package utils
 
 import (
-	log "github.com/alecthomas/log4go"
 	"go_server/goconfig"
+	"go_server/log"
 	"os"
 )
 

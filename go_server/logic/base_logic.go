@@ -3,10 +3,10 @@ package logic
 import (
 	"encoding/json"
 
-	log "github.com/alecthomas/log4go"
 	"github.com/golang/protobuf/proto"
 	"go_server/codec"
 	"go_server/dao"
+	"go_server/log"
 	"go_server/protocol"
 	sev "go_server/server"
 	//"strconv"

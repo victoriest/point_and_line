@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
-	log "github.com/alecthomas/log4go"
+	"go_server/log"
 )
 
 // JSONProbe Json的序列化实现

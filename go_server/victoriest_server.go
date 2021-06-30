@@ -3,6 +3,7 @@ package main
 import (
 	"go_server/dao"
 	"go_server/goconfig"
+	"go_server/log"
 	"go_server/logic"
 	"go_server/server"
 	"go_server/utils"
@@ -11,21 +12,16 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-
-	log "github.com/alecthomas/log4go"
 )
 
 func main() {
-	log.LoadConfiguration("./log4go.config")
+	log.InitZapLogger(true, "go_server", "./", "info", 1)
 	port, ip, dbPort, account, pwd, scheme, protocolType, appId, secret := readServerPort()
 	dbCon := new(dao.MysqlConnector)
 	iDbPort, _ := strconv.Atoi(dbPort)
 	isConnect := dbCon.Connect(&ip, iDbPort, &account, &pwd, &scheme)
 	if !isConnect {
-		err := log.Warn("mysql connect failed")
-		if err != nil {
-			return
-		}
+		log.Warn("mysql connect failed")
 		return
 	}
 	var pt server.ProtocolType
@@ -59,12 +55,12 @@ func readServerPort() (string, string, string, string, string, string, string, s
 	utils.CheckError(err, true)
 	pwd, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.pwd")
 	utils.CheckError(err, true)
-	schame, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.schame")
+	scheme, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.schame")
 	utils.CheckError(err, true)
-	appid, err := cf.GetValue(goconfig.DEFAULT_SECTION, "wx.appid")
+	appId, err := cf.GetValue(goconfig.DEFAULT_SECTION, "wx.appid")
 	utils.CheckError(err, false)
 	secret, err := cf.GetValue(goconfig.DEFAULT_SECTION, "wx.secret")
 	utils.CheckError(err, false)
 
-	return port, ip, dbPort, account, pwd, schame, protocolType, appid, secret
+	return port, ip, dbPort, account, pwd, scheme, protocolType, appId, secret
 }

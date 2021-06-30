@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	log "github.com/alecthomas/log4go"
 	"github.com/golang/protobuf/proto"
+	"go_server/log"
 	"go_server/protocol"
 )
 
