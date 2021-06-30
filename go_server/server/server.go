@@ -6,19 +6,19 @@ import (
 	"net"
 	"net/http"
 
-	"../codec"
-	"../dao"
-	"../protocol"
-	"../utils"
 	log "github.com/alecthomas/log4go"
 	"github.com/gorilla/websocket"
+	"go_server/codec"
+	"go_server/dao"
+	"go_server/protocol"
+	"go_server/utils"
 )
 
 // INexus 服务器接口
 type INexus interface {
-	// 启动服务器
+	// Startup 启动服务器
 	Startup()
-	// 关闭服务器
+	// Shutdown 关闭服务器
 	Shutdown()
 }
 

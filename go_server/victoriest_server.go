@@ -1,48 +1,51 @@
 package main
 
 import (
+	"go_server/dao"
+	"go_server/goconfig"
+	"go_server/logic"
+	"go_server/server"
+	"go_server/utils"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strconv"
 
-	"./dao"
-	"./goconfig"
-	"./logic"
-	sev "./server"
-	"./utils"
 	log "github.com/alecthomas/log4go"
 )
 
 func main() {
 	log.LoadConfiguration("./log4go.config")
-	port, ip, dbPort, account, pwd, schame, protocolType, appid, secret := readServerPort()
+	port, ip, dbPort, account, pwd, scheme, protocolType, appId, secret := readServerPort()
 	dbCon := new(dao.MysqlConnector)
 	iDbPort, _ := strconv.Atoi(dbPort)
-	isConnect := dbCon.Connect(&ip, iDbPort, &account, &pwd, &schame)
+	isConnect := dbCon.Connect(&ip, iDbPort, &account, &pwd, &scheme)
 	if !isConnect {
-		log.Warn("mysql connect faild")
+		err := log.Warn("mysql connect failed")
+		if err != nil {
+			return
+		}
 		return
 	}
-	var pt sev.ProtocolType
+	var pt server.ProtocolType
 	if protocolType == "tcp" {
-		pt = sev.ProtocolTypeTCP
+		pt = server.ProtocolTypeTCP
 	} else {
-		pt = sev.ProtocolTypeWebSocket
+		pt = server.ProtocolTypeWebSocket
 	}
-	server := sev.NewNexus(pt, port, logic.TCPHandler,
+	nexus := server.NewNexus(pt, port, logic.TCPHandler,
 		logic.ConnectedHandler, logic.DisconnectingHander,
-		dbCon, appid, secret)
-	server.Startup()
+		dbCon, appId, secret)
+	nexus.Startup()
 }
 
 // 读取配置文件
 func readServerPort() (string, string, string, string, string, string, string, string, string) {
-	exefile, _ := exec.LookPath(os.Args[0])
-	log.Info(filepath.Dir(exefile))
-	filepath := path.Join(filepath.Dir(exefile), "./server.config")
-	cf, err := goconfig.LoadConfigFile(filepath)
+	exeFile, _ := exec.LookPath(os.Args[0])
+	log.Info(filepath.Dir(exeFile))
+	filePath := path.Join(filepath.Dir(exeFile), "./server.config")
+	cf, err := goconfig.LoadConfigFile(filePath)
 	utils.CheckError(err, true)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
 	utils.CheckError(err, true)

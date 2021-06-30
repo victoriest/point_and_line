@@ -3,12 +3,12 @@ package logic
 import (
 	"container/list"
 
-	"../codec"
-	"../protocol"
-	sev "../server"
-	game "./games"
 	log "github.com/alecthomas/log4go"
 	proto "github.com/golang/protobuf/proto"
+	"go_server/codec"
+	game "go_server/logic/games"
+	"go_server/protocol"
+	sev "go_server/server"
 )
 
 var inGameMap = make(map[string]string)

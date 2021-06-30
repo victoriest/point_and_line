@@ -1,7 +1,6 @@
 package games
 
 import (
-	"fmt"
 	"testing"
 )
 

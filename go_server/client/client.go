@@ -1,12 +1,12 @@
 package client
 
 import (
-	"../codec"
-	"../protocol"
-	"../utils"
 	"bufio"
-	log "code.google.com/p/log4go"
 	"fmt"
+	log "github.com/alecthomas/log4go"
+	"go_server/codec"
+	"go_server/protocol"
+	"go_server/utils"
 	"net"
 	"strings"
 )

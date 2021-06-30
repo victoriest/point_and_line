@@ -1,12 +1,12 @@
 package main
 
 import (
-	"./client"
-	"./goconfig"
-	"./protocol"
-	"./utils"
-	proto "code.google.com/p/goprotobuf/proto"
-	log "code.google.com/p/log4go"
+	log "github.com/alecthomas/log4go"
+	"github.com/golang/protobuf/proto"
+	"go_server/client"
+	"go_server/goconfig"
+	"go_server/protocol"
+	"go_server/utils"
 	"net"
 	"os"
 	"os/exec"

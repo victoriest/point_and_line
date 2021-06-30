@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"./dao"
-	"./goconfig"
 	_ "github.com/go-sql-driver/mysql"
+	"go_server/dao"
+	"go_server/goconfig"
 )
 
 func main() {

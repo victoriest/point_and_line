@@ -4,7 +4,7 @@ import (
 	pb "./victoriest.org/protobuf"
 	"bufio"
 	"bytes"
-	proto "code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"encoding/binary"
 	"fmt"
 	"net"
