@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./codec"
 	"bufio"
 	"fmt"
+	"go_server/demo/codec"
 	"net"
 )
 
