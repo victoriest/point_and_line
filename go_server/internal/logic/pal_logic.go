@@ -2,13 +2,12 @@ package logic
 
 import (
 	"container/list"
-
-	proto "github.com/golang/protobuf/proto"
-	"go_server/codec"
-	"go_server/log"
-	game "go_server/logic/games"
+	"github.com/golang/protobuf/proto"
+	"go_server/internal/codec"
+	"go_server/internal/logic/games"
+	sev "go_server/internal/server"
+	"go_server/pkg/log"
 	"go_server/protocol"
-	sev "go_server/server"
 )
 
 var inGameMap = make(map[string]string)
@@ -17,7 +16,7 @@ var ipMappingNick = make(map[string]string)
 
 var joinGameList = list.New()
 
-var gameObjMap = make(map[string]*game.PointAndLineGame)
+var gameObjMap = make(map[string]*games.PointAndLineGame)
 
 // TCPHandler 处理消息具体实现
 func TCPHandler(server *sev.Nexus, ipStr string, message interface{}) {

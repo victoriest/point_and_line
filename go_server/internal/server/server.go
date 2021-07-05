@@ -3,15 +3,15 @@ package server
 import (
 	"bufio"
 	"encoding/json"
+	"go_server/internal/codec"
+	"go_server/internal/dao"
+	"go_server/pkg/log"
+	utils2 "go_server/pkg/utils"
 	"net"
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"go_server/codec"
-	"go_server/dao"
-	"go_server/log"
 	"go_server/protocol"
-	"go_server/utils"
 )
 
 // INexus 服务器接口
@@ -44,7 +44,7 @@ type Nexus struct {
 	port                 string                 // 服务端端口号
 	quitSemaphore        chan bool              // 退出信号量
 	connMap              map[string]interface{} // 客户端连接Map
-	receivedHandler       MessageReceivedHandler  // 消息逻辑处理托管Handler
+	receivedHandler      MessageReceivedHandler // 消息逻辑处理托管Handler
 	newConnectionHandler ConnectionHandler      // 新连接处理Handler
 	disconnectHandler    ConnectionHandler      // 断开连接处理Handler
 	probe                interface{}            // 序列化接口
@@ -116,10 +116,10 @@ func (nexus *Nexus) Startup() {
 		nexus.probe = *new(codec.ProtobufProbe)
 
 		tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
-		utils.CheckError(err, true)
+		utils2.CheckError(err, true)
 
 		tcpListener, err := net.ListenTCP("tcp", tcpAddr)
-		utils.CheckError(err, true)
+		utils2.CheckError(err, true)
 
 		defer tcpListener.Close()
 		log.Info("Start listen ", tcpListener.Addr().String())
@@ -132,7 +132,7 @@ func (nexus *Nexus) Startup() {
 		http.HandleFunc("/ws", nexus.initWsConnectionManager)
 		// http.HandleFunc("/ws", nexus.getWxSession)
 		err := http.ListenAndServe(strAddr, nil)
-		utils.CheckError(err, true)
+		utils2.CheckError(err, true)
 	}
 }
 

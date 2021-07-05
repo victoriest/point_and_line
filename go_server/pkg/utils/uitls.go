@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"go_server/goconfig"
-	"go_server/log"
+	"go_server/pkg/goconfig"
+	"go_server/pkg/log"
 	"os"
 )
 

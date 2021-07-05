@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"go_server/pkg/log"
 
 	"github.com/golang/protobuf/proto"
-	"go_server/log"
 	"go_server/protocol"
 )
 

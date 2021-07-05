@@ -1,12 +1,12 @@
 package main
 
 import (
-	"go_server/dao"
-	"go_server/goconfig"
-	"go_server/log"
-	"go_server/logic"
-	"go_server/server"
-	"go_server/utils"
+	"go_server/internal/dao"
+	"go_server/internal/logic"
+	sev "go_server/internal/server"
+	"go_server/pkg/goconfig"
+	"go_server/pkg/log"
+	utils2 "go_server/pkg/utils"
 	"os"
 	"os/exec"
 	"path"
@@ -24,13 +24,13 @@ func main() {
 		log.Warn("mysql connect failed")
 		return
 	}
-	var pt server.ProtocolType
+	var pt sev.ProtocolType
 	if protocolType == "tcp" {
-		pt = server.ProtocolTypeTCP
+		pt = sev.ProtocolTypeTCP
 	} else {
-		pt = server.ProtocolTypeWebSocket
+		pt = sev.ProtocolTypeWebSocket
 	}
-	nexus := server.NewNexus(pt, port, logic.TCPHandler,
+	nexus := sev.NewNexus(pt, port, logic.TCPHandler,
 		logic.ConnectedHandler, logic.DisconnectingHander,
 		dbCon, appId, secret)
 	nexus.Startup()
@@ -42,25 +42,25 @@ func readServerPort() (string, string, string, string, string, string, string, s
 	log.Info(filepath.Dir(exeFile))
 	filePath := path.Join(filepath.Dir(exeFile), "./server.config")
 	cf, err := goconfig.LoadConfigFile(filePath)
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	port, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.port")
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	protocolType, err := cf.GetValue(goconfig.DEFAULT_SECTION, "server.type")
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	ip, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.ip")
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	dbPort, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.port")
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	account, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.user")
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	pwd, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.pwd")
-	utils.CheckError(err, true)
-	scheme, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.schame")
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
+	scheme, err := cf.GetValue(goconfig.DEFAULT_SECTION, "db.scheme")
+	utils2.CheckError(err, true)
 	appId, err := cf.GetValue(goconfig.DEFAULT_SECTION, "wx.appid")
-	utils.CheckError(err, false)
+	utils2.CheckError(err, false)
 	secret, err := cf.GetValue(goconfig.DEFAULT_SECTION, "wx.secret")
-	utils.CheckError(err, false)
+	utils2.CheckError(err, false)
 
 	return port, ip, dbPort, account, pwd, scheme, protocolType, appId, secret
 }

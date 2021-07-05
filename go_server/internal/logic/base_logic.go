@@ -2,13 +2,12 @@ package logic
 
 import (
 	"encoding/json"
-
 	"github.com/golang/protobuf/proto"
-	"go_server/codec"
-	"go_server/dao"
-	"go_server/log"
+	"go_server/internal/codec"
+	"go_server/internal/dao"
+	sev "go_server/internal/server"
+	"go_server/pkg/log"
 	"go_server/protocol"
-	sev "go_server/server"
 	//"strconv"
 )
 

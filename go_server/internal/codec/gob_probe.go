@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
-
-	"go_server/log"
+	"go_server/pkg/log"
 )
 
 // GobProbe Gob的序列化实现

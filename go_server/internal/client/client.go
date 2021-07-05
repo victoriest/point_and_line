@@ -3,10 +3,10 @@ package client
 import (
 	"bufio"
 	"fmt"
-	"go_server/codec"
-	"go_server/log"
+	codec2 "go_server/internal/codec"
+	log2 "go_server/pkg/log"
+	utils2 "go_server/pkg/utils"
 	"go_server/protocol"
-	"go_server/utils"
 	"net"
 	"strings"
 )
@@ -25,7 +25,7 @@ type RobotClient struct {
 	quitSemaphore   chan bool              // 退出信号量
 	receivedHandler MessageReceivedHandler // 消息接收逻辑处理托管
 	sendHandler     MessageSenderHandler   // 消息发送逻辑处理托管
-	Probe           codec.ProtobufProbe    // 序列化实现
+	Probe           codec2.ProtobufProbe   // 序列化实现
 }
 
 func NewClient(ip string, port string, receivedLogic MessageReceivedHandler, sendLogic MessageSenderHandler) *RobotClient {
@@ -35,19 +35,19 @@ func NewClient(ip string, port string, receivedLogic MessageReceivedHandler, sen
 	client.quitSemaphore = make(chan bool)
 	client.receivedHandler = receivedLogic
 	client.sendHandler = sendLogic
-	client.Probe = *new(codec.ProtobufProbe)
+	client.Probe = *new(codec2.ProtobufProbe)
 	return client
 }
 
 func (self *RobotClient) Startup() {
 	strAddr := self.ip + ":" + self.port
 	tcpAddr, err := net.ResolveTCPAddr("tcp", strAddr)
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
-	utils.CheckError(err, true)
+	utils2.CheckError(err, true)
 	defer conn.Close()
-	log.Info("connecting ", conn.RemoteAddr().String(), "...")
+	log2.Info("connecting ", conn.RemoteAddr().String(), "...")
 
 	go self.onSendMessage(conn)
 	go self.onMessageReceived(conn)
@@ -72,7 +72,7 @@ func (self *RobotClient) onMessageReceived(conn *net.TCPConn) {
 	reader := bufio.NewReader(conn)
 	for {
 		message, _, err := self.Probe.DeserializeByReader(reader)
-		utils.CheckError(err, true)
+		utils2.CheckError(err, true)
 		self.receivedHandler(self, message)
 	}
 }

@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-
-	"go_server/log"
+	"go_server/pkg/log"
 )
 
 // JSONProbe Json的序列化实现

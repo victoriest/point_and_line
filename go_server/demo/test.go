@@ -4,11 +4,11 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	dao2 "go_server/internal/dao"
+	goconfig2 "go_server/pkg/goconfig"
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
-	"go_server/dao"
-	"go_server/goconfig"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 }
 
 func testConnector() {
-	connection := new(dao.MysqlConnector)
+	connection := new(dao2.MysqlConnector)
 	ip := "127.0.0.1"
 	account := "root"
 	pwd := "estest"
@@ -37,8 +37,8 @@ func testConnector() {
 }
 
 func testReadConfig() {
-	cf, _ := goconfig.LoadConfigFile("server_config.ini")
-	fmt.Println(cf.GetValue(goconfig.DEFAULT_SECTION, "server.port"))
+	cf, _ := goconfig2.LoadConfigFile("server_config.ini")
+	fmt.Println(cf.GetValue(goconfig2.DEFAULT_SECTION, "server.port"))
 }
 
 func testSql() {

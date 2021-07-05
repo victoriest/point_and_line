@@ -2,13 +2,12 @@ package logic
 
 import (
 	"encoding/json"
-
 	"github.com/golang/protobuf/proto"
-	"go_server/codec"
-	"go_server/log"
-	"go_server/logic/games"
+	"go_server/internal/codec"
+	"go_server/internal/logic/games"
+	sev "go_server/internal/server"
+	"go_server/pkg/log"
 	"go_server/protocol"
-	sev "go_server/server"
 )
 
 func processLinePoint(server *sev.Nexus, ipStr string, message interface{}) {
